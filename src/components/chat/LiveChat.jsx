@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Send, X, Minimize2 } from 'lucide-react';
+import { MessageCircle, Send, X, Minimize2, Shield } from 'lucide-react';
 import TipButton from '@/components/monetization/TipButton';
 import ChatPoll from './ChatPoll';
 
@@ -12,6 +13,8 @@ export default function LiveChat({ isLive = false, activePoll = null }) {
     { user: 'DJ Red Fang', message: 'Welcome to the broadcast! Chat is live.', timestamp: Date.now(), isHost: true }
   ]);
   const [inputValue, setInputValue] = useState('');
+  const [isModeratingMessage, setIsModeratingMessage] = useState(false);
+  const [userTier, setUserTier] = useState(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -22,8 +25,65 @@ export default function LiveChat({ isLive = false, activePoll = null }) {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  useEffect(() => {
+    const fetchUserTier = async () => {
+      try {
+        const user = await base44.auth.me();
+        const subscriptions = await base44.entities.Subscription.filter({ user_email: user.email });
+        if (subscriptions.length > 0) {
+          setUserTier(subscriptions[0].tier);
+        } else {
+          setUserTier('free');
+        }
+      } catch (error) {
+        setUserTier('free');
+      }
+    };
+    fetchUserTier();
+  }, []);
+
+  const moderateMessage = async (message) => {
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze this chat message for inappropriate content (profanity, hate speech, spam, harassment, explicit content). Return JSON with "safe" (boolean) and "reason" (string, only if unsafe).
+
+Message: "${message}"`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            safe: { type: "boolean" },
+            reason: { type: "string" }
+          }
+        }
+      });
+      return result;
+    } catch (error) {
+      return { safe: true, reason: '' };
+    }
+  };
+
+  const handleSend = async () => {
+    if (!inputValue.trim() || isModeratingMessage) return;
+    
+    // VIP/Broadcaster bypass moderation
+    const bypassModeration = userTier === 'vip' || userTier === 'broadcaster';
+    
+    if (!bypassModeration) {
+      setIsModeratingMessage(true);
+      const modResult = await moderateMessage(inputValue);
+      setIsModeratingMessage(false);
+      
+      if (!modResult.safe) {
+        setMessages([...messages, {
+          user: 'System',
+          message: `⚠️ Message blocked: ${modResult.reason}`,
+          timestamp: Date.now(),
+          isSystem: true
+        }]);
+        setInputValue('');
+        return;
+      }
+    }
     
     setMessages([...messages, {
       user: 'You',
@@ -96,13 +156,15 @@ export default function LiveChat({ isLive = false, activePoll = null }) {
               />
             )}
             {messages.map((msg, i) => (
-              <div key={i} className={`flex flex-col ${msg.isHost ? 'items-start' : 'items-end'}`}>
+              <div key={i} className={`flex flex-col ${msg.isHost ? 'items-start' : msg.isSystem ? 'items-center' : 'items-end'}`}>
                 <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                   msg.isHost 
                     ? 'bg-gradient-to-r from-red-500/20 to-cyan-400/20 border border-red-500/30' 
+                    : msg.isSystem
+                    ? 'bg-red-500/10 border border-red-500/50'
                     : 'bg-white/5 border border-white/10'
                 }`}>
-                  <div className={`text-xs mb-1 ${msg.isHost ? 'text-red-400' : 'text-cyan-400'}`}>
+                  <div className={`text-xs mb-1 ${msg.isHost ? 'text-red-400' : msg.isSystem ? 'text-red-400' : 'text-cyan-400'}`}>
                     {msg.user}
                   </div>
                   <div className="text-white text-sm">{msg.message}</div>
@@ -114,16 +176,30 @@ export default function LiveChat({ isLive = false, activePoll = null }) {
 
           {/* Input */}
           <div className="p-4 border-t border-red-500/30">
+            {/* Moderation Status */}
+            {userTier && (userTier === 'vip' || userTier === 'broadcaster') && (
+              <div className="flex items-center gap-2 mb-2 text-xs text-cyan-400">
+                <Shield className="w-3 h-3" />
+                <span>Premium: Moderation bypassed</span>
+              </div>
+            )}
+            {isModeratingMessage && (
+              <div className="mb-2 text-xs text-cyan-400 animate-pulse">
+                🛡️ AI checking message...
+              </div>
+            )}
             <div className="flex gap-2">
               <Input
                 placeholder="Type a message..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                onKeyPress={(e) => e.key === 'Enter' && !isModeratingMessage && handleSend()}
+                disabled={isModeratingMessage}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
               />
               <Button
                 onClick={handleSend}
+                disabled={isModeratingMessage}
                 className="bg-gradient-to-r from-red-500 to-cyan-400 hover:from-red-600 hover:to-cyan-500 text-white"
               >
                 <Send className="w-4 h-4" />
