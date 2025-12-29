@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Send, X, Minimize2 } from 'lucide-react';
 import TipButton from '@/components/monetization/TipButton';
+import ChatPoll from './ChatPoll';
 
-export default function LiveChat({ isLive = false }) {
+export default function LiveChat({ isLive = false, activePoll = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
@@ -88,6 +89,12 @@ export default function LiveChat({ isLive = false }) {
         <>
           {/* Messages */}
           <div className="h-[480px] overflow-y-auto p-4 space-y-3">
+            {activePoll && (
+              <ChatPoll 
+                question={activePoll.question} 
+                options={activePoll.options || ['House', 'Techno', 'Drum & Bass', 'Dubstep']} 
+              />
+            )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex flex-col ${msg.isHost ? 'items-start' : 'items-end'}`}>
                 <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${

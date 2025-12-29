@@ -477,10 +477,10 @@ export default function BroadcastPortal() {
       </div>
 
       {/* DJ Red Fang */}
-      <DJRedFang context={isLive ? 'live' : 'broadcast'} />
+      <DJRedFang context={isLive ? 'live' : 'broadcast'} currentGenre="electronic" chatSentiment="energetic" />
 
       {/* Live Chat */}
-      <LiveChat isLive={isLive} />
+      <LiveChat isLive={isLive} activePoll={null} />
 
       {/* 3D Elevator Navigation */}
       <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />

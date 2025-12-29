@@ -343,10 +343,10 @@ export default function RecordingStudio() {
         )}
 
         {/* DJ Red Fang */}
-        <DJRedFang context={isRecording ? 'recording' : 'greeting'} />
+        <DJRedFang context={isRecording ? 'recording' : 'greeting'} currentGenre="electronic" chatSentiment="focused" />
 
         {/* Live Chat */}
-        <LiveChat isLive={isRecording} />
+        <LiveChat isLive={isRecording} activePoll={null} />
 
         {/* Environment Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">

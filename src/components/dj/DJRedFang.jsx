@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { base44 } from '@/api/base44Client';
 import { Mic2, Sparkles, Radio, Volume2 } from 'lucide-react';
 
-export default function DJRedFang({ context = 'greeting' }) {
+export default function DJRedFang({ context = 'greeting', currentGenre = 'electronic', chatSentiment = 'neutral' }) {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showPoll, setShowPoll] = useState(false);
 
   const contextMessages = {
     greeting: "What's up, I'm Red Fang. Ready to drop some heat on the airwaves?",
@@ -38,6 +40,55 @@ export default function DJRedFang({ context = 'greeting' }) {
       setMessage("Signal's a bit fuzzy right now. Try me again in a sec.");
     } finally {
       setIsTyping(false);
+    }
+  };
+
+  const generateTrackSuggestions = async () => {
+    setIsTyping(true);
+    try {
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are DJ Red Fang. Generate 3 track suggestions. Current genre: ${currentGenre}. Chat vibe: ${chatSentiment}. Return ONLY a JSON array of objects with "artist" and "track" fields.`,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            tracks: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  artist: { type: "string" },
+                  track: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      });
+      setSuggestions(response.tracks || []);
+      setMessage(`Based on the ${chatSentiment} energy in the chat, here's what's hitting right now:`);
+    } catch (error) {
+      setMessage("Let me read the room first...");
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const launchPoll = async (question) => {
+    setShowPoll(true);
+    setMessage(`🎤 POLL TIME: ${question}`);
+  };
+
+  const greetVIP = async () => {
+    try {
+      const tips = await base44.entities.Tip.list('-created_date', 5);
+      const subscriptions = await base44.entities.Subscription.filter({ tier: 'vip' });
+      
+      if (tips.length > 0 || subscriptions.length > 0) {
+        const vipNames = tips.slice(0, 3).map(t => t.from_user.split('@')[0]);
+        setMessage(`Big shout to our supporters: ${vipNames.join(', ')}! Y'all keep the station alive. 🔥`);
+      }
+    } catch (error) {
+      console.error('VIP greeting failed:', error);
     }
   };
 
@@ -101,19 +152,37 @@ export default function DJRedFang({ context = 'greeting' }) {
           )}
         </div>
 
+        {/* Track Suggestions */}
+        {suggestions.length > 0 && (
+          <div className="mb-4 space-y-2">
+            {suggestions.map((track, i) => (
+              <div key={i} className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30">
+                <div className="text-xs text-cyan-400">{track.artist}</div>
+                <div className="text-sm text-white font-medium">{track.track}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => askRedFang("What should I play next?")}
+            onClick={generateTrackSuggestions}
             className="px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 text-xs hover:bg-red-500/30 transition-colors"
           >
-            Track suggestion
+            🎵 Smart Picks
           </button>
           <button
-            onClick={() => askRedFang("Give me broadcast tips")}
+            onClick={() => launchPoll("What genre next?")}
             className="px-3 py-1.5 rounded-full bg-cyan-400/20 text-cyan-400 text-xs hover:bg-cyan-400/30 transition-colors"
           >
-            Broadcast tips
+            📊 Launch Poll
+          </button>
+          <button
+            onClick={greetVIP}
+            className="px-3 py-1.5 rounded-full bg-red-500/20 text-red-400 text-xs hover:bg-red-500/30 transition-colors"
+          >
+            👑 Shout VIPs
           </button>
         </div>
       </div>
