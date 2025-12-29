@@ -9,6 +9,8 @@ import GammaEmbed from '@/components/media/GammaEmbed';
 import SocialEmbeds from '@/components/media/SocialEmbeds';
 import SpatialAudio from '@/components/audio/SpatialAudio';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
+import LiveChat from '@/components/chat/LiveChat';
+import DJRedFang from '@/components/dj/DJRedFang';
 
 export default function BroadcastPortal() {
   const canvasRef = useRef(null);
@@ -22,8 +24,8 @@ export default function BroadcastPortal() {
     if (!canvasRef.current) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.Fog(0x000000, 15, 60);
+    scene.background = new THREE.Color(0x0a0000);
+    scene.fog = new THREE.Fog(0x0a0000, 15, 60);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 3, 15);
@@ -39,6 +41,12 @@ export default function BroadcastPortal() {
       orange: 0xf97316,
       lime: 0x84cc16
     };
+
+    const redGlowMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: isLive ? 0.8 : 0.3,
+    });
 
     // Materials
     const glassMaterial = new THREE.MeshPhysicalMaterial({
@@ -81,10 +89,21 @@ export default function BroadcastPortal() {
 
     const consoleEdge = new THREE.Mesh(
       new THREE.BoxGeometry(8.2, 0.15, 4.2),
-      cyanGlowMaterial
+      isLive ? redGlowMaterial : cyanGlowMaterial
     );
     consoleEdge.position.y = 1;
     consoleGroup.add(consoleEdge);
+
+    // Control buttons on console
+    for (let i = 0; i < 12; i++) {
+      const button = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.1, 0.1, 0.05, 16),
+        i % 3 === 0 ? redGlowMaterial : cyanGlowMaterial
+      );
+      button.position.set(-3 + (i * 0.6), 1.1, 1.5);
+      button.rotation.x = Math.PI / 2;
+      consoleGroup.add(button);
+    }
 
     scene.add(consoleGroup);
 
@@ -456,6 +475,12 @@ export default function BroadcastPortal() {
           </div>
         </div>
       </div>
+
+      {/* DJ Red Fang */}
+      <DJRedFang context={isLive ? 'live' : 'broadcast'} />
+
+      {/* Live Chat */}
+      <LiveChat isLive={isLive} />
 
       {/* 3D Elevator Navigation */}
       <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />

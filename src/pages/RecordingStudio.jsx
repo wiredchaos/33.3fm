@@ -2,21 +2,26 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { ArrowLeft, Music, Save, Upload } from 'lucide-react';
+import { ArrowLeft, Music, Save, Upload, Layers } from 'lucide-react';
 import MediaUpload from '@/components/media/MediaUpload';
+import LiveChat from '@/components/chat/LiveChat';
+import DJRedFang from '@/components/dj/DJRedFang';
+import MusicVisualizer from '@/components/audio/MusicVisualizer';
+import ElevatorNav from '@/components/navigation/ElevatorNav';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [showElevator, setShowElevator] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
-    scene.fog = new THREE.Fog(0x000000, 10, 50);
+    scene.background = new THREE.Color(0x0a0000);
+    scene.fog = new THREE.Fog(0x0a0000, 10, 50);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(6, 3, 10);
@@ -36,6 +41,12 @@ export default function RecordingStudio() {
       thickness: 0.5,
     });
 
+    const redGlowMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff0000,
+      emissive: 0xff0000,
+      emissiveIntensity: isRecording ? 0.8 : 0.2,
+    });
+
     const cyanGlowMaterial = new THREE.MeshStandardMaterial({
       color: 0x00ffff,
       emissive: 0x00ffff,
@@ -50,41 +61,80 @@ export default function RecordingStudio() {
       opacity: isSaving ? 1 : 0,
     });
 
-    // Vocal booth - glass enclosure
+    // Vocal booth - glass enclosure with red accents
     const boothGeometry = new THREE.BoxGeometry(3, 3.5, 3);
     const booth = new THREE.Mesh(boothGeometry, glassMaterial);
     booth.position.set(-3, 1.75, 0);
     scene.add(booth);
 
     const boothEdges = new THREE.EdgesGeometry(boothGeometry);
-    const boothEdgeMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 });
+    const boothEdgeMaterial = new THREE.LineBasicMaterial({ 
+      color: isRecording ? 0xff0000 : 0x00ffff, 
+      transparent: true, 
+      opacity: isRecording ? 0.9 : 0.6 
+    });
     const boothFrame = new THREE.LineSegments(boothEdges, boothEdgeMaterial);
     boothFrame.position.copy(booth.position);
     scene.add(boothFrame);
 
-    // Microphone in booth
+    // Professional microphone setup in booth
     const micGroup = new THREE.Group();
-    const micStandGeometry = new THREE.CylinderGeometry(0.04, 0.04, 2, 8);
-    const micStand = new THREE.Mesh(micStandGeometry, glassMaterial);
-    micStand.position.y = 1;
-    
-    const micGeometry = new THREE.SphereGeometry(0.2, 16, 16);
-    const mic = new THREE.Mesh(micGeometry, cyanGlowMaterial);
-    mic.position.y = 2;
-    
-    micGroup.add(micStand);
+
+    // Mic boom arm
+    const boomGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 8);
+    const boom = new THREE.Mesh(boomGeometry, glassMaterial);
+    boom.position.y = 2;
+    boom.rotation.z = Math.PI / 6;
+
+    // Microphone
+    const micGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.4, 16);
+    const mic = new THREE.Mesh(micGeometry, redGlowMaterial);
+    mic.position.y = 2.5;
+
+    // Shock mount
+    const shockMount = new THREE.TorusGeometry(0.15, 0.02, 8, 16);
+    const shockMesh = new THREE.Mesh(shockMount, cyanGlowMaterial);
+    shockMesh.position.y = 2.5;
+    shockMesh.rotation.x = Math.PI / 2;
+
+    // Pop filter
+    const popFilter = new THREE.RingGeometry(0.25, 0.3, 32);
+    const popMesh = new THREE.Mesh(popFilter, glassMaterial);
+    popMesh.position.set(0, 2.5, 0.4);
+
+    micGroup.add(boom);
     micGroup.add(mic);
+    micGroup.add(shockMesh);
+    micGroup.add(popMesh);
     micGroup.position.set(-3, 0, 0);
     scene.add(micGroup);
 
-    // Control room panels
+    // Professional control room with mixing desk
     const controlDesk = new THREE.Group();
-    
-    // Main control surface
-    const deskGeometry = new THREE.BoxGeometry(4, 0.1, 2);
+
+    // Main mixing desk surface
+    const deskGeometry = new THREE.BoxGeometry(4, 0.15, 2);
     const desk = new THREE.Mesh(deskGeometry, glassMaterial);
     desk.position.y = 1;
+    desk.rotation.x = -0.1;
     controlDesk.add(desk);
+
+    // Desk frame with red accent
+    const deskFrameGeometry = new THREE.BoxGeometry(4.1, 0.1, 2.1);
+    const deskFrame = new THREE.Mesh(deskFrameGeometry, redGlowMaterial);
+    deskFrame.position.y = 1;
+    deskFrame.rotation.x = -0.1;
+    controlDesk.add(deskFrame);
+
+    // Faders and knobs
+    for (let i = 0; i < 16; i++) {
+      const fader = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.3, 0.05),
+        i % 3 === 0 ? redGlowMaterial : cyanGlowMaterial
+      );
+      fader.position.set(-1.8 + (i * 0.24), 1.3, 0);
+      controlDesk.add(fader);
+    }
 
     // Control panels - floating glass screens
     const panelPositions = [
@@ -137,13 +187,17 @@ export default function RecordingStudio() {
     keyLight.penumbra = 0.5;
     scene.add(keyLight);
 
-    const boothLight = new THREE.PointLight(0x00ffff, 0.5, 10);
+    const boothLight = new THREE.PointLight(isRecording ? 0xff0000 : 0x00ffff, isRecording ? 1 : 0.5, 10);
     boothLight.position.set(-3, 3, 0);
     scene.add(boothLight);
 
-    const controlLight = new THREE.PointLight(0x00ffff, 0.5, 10);
+    const controlLight = new THREE.PointLight(0xff0000, 0.6, 10);
     controlLight.position.set(3, 3, 0);
     scene.add(controlLight);
+
+    const accentLight = new THREE.PointLight(0xff0000, 0.4, 20);
+    accentLight.position.set(0, 5, 5);
+    scene.add(accentLight);
 
     // Animation
     let time = 0;
@@ -227,14 +281,21 @@ export default function RecordingStudio() {
               Recording Studio
             </div>
             <button
+              onClick={() => setShowElevator(true)}
+              className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2"
+            >
+              <Layers className="w-4 h-4" />
+              Elevator
+            </button>
+            <button
               onClick={() => setIsRecording(!isRecording)}
               className={`px-4 py-2 rounded-full text-xs uppercase tracking-wider transition-all ${
                 isRecording 
-                  ? 'bg-cyan-400 text-black shadow-lg shadow-cyan-400/50' 
+                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/50 animate-pulse' 
                   : 'bg-white/10 text-white/60 hover:bg-white/20'
               }`}
             >
-              {isRecording ? '● Recording' : 'Record'}
+              {isRecording ? '● REC' : 'Record'}
             </button>
             <button
               onClick={handleSave}
@@ -274,6 +335,19 @@ export default function RecordingStudio() {
           </div>
         )}
 
+        {/* Music Visualizer */}
+        {isRecording && (
+          <div className="absolute top-24 left-6 pointer-events-auto">
+            <MusicVisualizer isActive={isRecording} intensity={1} />
+          </div>
+        )}
+
+        {/* DJ Red Fang */}
+        <DJRedFang context={isRecording ? 'recording' : 'greeting'} />
+
+        {/* Live Chat */}
+        <LiveChat isLive={isRecording} />
+
         {/* Environment Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6">
@@ -301,6 +375,9 @@ export default function RecordingStudio() {
           </div>
         </div>
       </div>
+
+      {/* 3D Elevator Navigation */}
+      <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />
     </div>
   );
 }
