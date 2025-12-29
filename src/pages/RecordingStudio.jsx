@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { ArrowLeft, Music, Save } from 'lucide-react';
+import { ArrowLeft, Music, Save, Upload } from 'lucide-react';
+import MediaUpload from '@/components/media/MediaUpload';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -242,8 +244,35 @@ export default function RecordingStudio() {
               <Save className="w-4 h-4" />
               {isSaving ? 'Saving...' : 'Save'}
             </button>
+            <button
+              onClick={() => setShowUpload(!showUpload)}
+              className="px-4 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Upload
+            </button>
           </div>
         </div>
+
+        {/* Upload Panel */}
+        {showUpload && (
+          <div className="absolute top-24 right-6 pointer-events-auto max-w-md w-full">
+            <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-light text-white tracking-wide">
+                  Upload Audio/Media
+                </h3>
+                <button 
+                  onClick={() => setShowUpload(false)}
+                  className="text-white/60 hover:text-white"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              </div>
+              <MediaUpload onUploadComplete={(files) => console.log('Uploaded:', files)} />
+            </div>
+          </div>
+        )}
 
         {/* Environment Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">

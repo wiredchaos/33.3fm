@@ -2,12 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { ArrowLeft, Radio, Play, Pause, Video, Calendar } from 'lucide-react';
+import { ArrowLeft, Radio, Play, Pause, Video, Calendar, Upload, FileText } from 'lucide-react';
+import MediaUpload from '@/components/media/MediaUpload';
+import VideoPlayer from '@/components/media/VideoPlayer';
+import GammaEmbed from '@/components/media/GammaEmbed';
 
 export default function BroadcastPortal() {
   const canvasRef = useRef(null);
   const [isLive, setIsLive] = useState(false);
   const [accentColor, setAccentColor] = useState('purple'); // purple, pink, orange, lime
+  const [showMediaPanel, setShowMediaPanel] = useState(false);
+  const [mediaType, setMediaType] = useState('upload'); // upload, video, gamma
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -291,13 +296,26 @@ export default function BroadcastPortal() {
         {/* Control Panel */}
         <div className="absolute top-24 right-6 pointer-events-auto">
           <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3">
-            <button className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white">
-              <Play className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm">Play Content</span>
+            <button 
+              onClick={() => setShowMediaPanel(!showMediaPanel)}
+              className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white"
+            >
+              <Upload className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm">Upload Media</span>
             </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white">
+            <button 
+              onClick={() => { setMediaType('video'); setShowMediaPanel(true); }}
+              className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white"
+            >
               <Video className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm">Media</span>
+              <span className="text-sm">Video Embed</span>
+            </button>
+            <button 
+              onClick={() => { setMediaType('gamma'); setShowMediaPanel(true); }}
+              className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white"
+            >
+              <FileText className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm">Gamma Slides</span>
             </button>
             <button className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white">
               <Calendar className="w-4 h-4 text-cyan-400" />
@@ -330,6 +348,37 @@ export default function BroadcastPortal() {
             </div>
           </div>
         </div>
+
+        {/* Media Panel */}
+        {showMediaPanel && (
+          <div className="absolute top-24 left-6 pointer-events-auto max-w-2xl w-full">
+            <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-light text-white tracking-wide">
+                  {mediaType === 'upload' && 'Upload Media'}
+                  {mediaType === 'video' && 'Video Embed'}
+                  {mediaType === 'gamma' && 'Gamma Presentation'}
+                </h3>
+                <button 
+                  onClick={() => setShowMediaPanel(false)}
+                  className="text-white/60 hover:text-white"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              </div>
+
+              {mediaType === 'upload' && (
+                <MediaUpload onUploadComplete={(files) => console.log('Uploaded:', files)} />
+              )}
+              {mediaType === 'video' && (
+                <VideoPlayer />
+              )}
+              {mediaType === 'gamma' && (
+                <GammaEmbed />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Bottom Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
