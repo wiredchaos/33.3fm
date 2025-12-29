@@ -1,11 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { Radio, Mic, Music, User, Radio as Station } from 'lucide-react';
+import { Radio, Mic, Music, User, Radio as Station, Sparkles, Layers } from 'lucide-react';
+import NeuroConcierge from '@/components/navigation/NeuroConcierge';
+import ElevatorNav from '@/components/navigation/ElevatorNav';
 
 export default function Home() {
   const canvasRef = useRef(null);
+  const [showTour, setShowTour] = useState(false);
+  const [showElevator, setShowElevator] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -130,6 +134,24 @@ export default function Home() {
           <div className="mt-4 text-sm text-white/40 uppercase tracking-widest">
             WIRED CHAOS META · CRAB 3DT TRINITY
           </div>
+          
+          {/* Tour & Navigation Buttons */}
+          <div className="mt-8 flex gap-4">
+            <button
+              onClick={() => setShowTour(true)}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-full flex items-center gap-2 hover:opacity-90 transition-opacity shadow-lg shadow-cyan-400/30"
+            >
+              <Sparkles className="w-5 h-5" />
+              Start NEURO CONCIERGE Tour
+            </button>
+            <button
+              onClick={() => setShowElevator(true)}
+              className="px-6 py-3 bg-white/10 border border-white/20 text-white rounded-full flex items-center gap-2 hover:bg-white/20 transition-all"
+            >
+              <Layers className="w-5 h-5" />
+              3D Elevator
+            </button>
+          </div>
         </div>
 
         {/* Environment Grid */}
@@ -175,6 +197,12 @@ export default function Home() {
           Liquid Glass iOS · Broadcast Infrastructure
         </div>
       </div>
+
+      {/* NEURO CONCIERGE Tour */}
+      <NeuroConcierge isActive={showTour} onClose={() => setShowTour(false)} />
+
+      {/* 3D Elevator Navigation */}
+      <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />
     </div>
   );
 }

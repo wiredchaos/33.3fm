@@ -2,17 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { ArrowLeft, Radio, Play, Pause, Video, Calendar, Upload, FileText } from 'lucide-react';
+import { ArrowLeft, Radio, Play, Pause, Video, Calendar, Upload, FileText, Music as MusicIcon, Volume2, Layers } from 'lucide-react';
 import MediaUpload from '@/components/media/MediaUpload';
 import VideoPlayer from '@/components/media/VideoPlayer';
 import GammaEmbed from '@/components/media/GammaEmbed';
+import SocialEmbeds from '@/components/media/SocialEmbeds';
+import SpatialAudio from '@/components/audio/SpatialAudio';
+import ElevatorNav from '@/components/navigation/ElevatorNav';
 
 export default function BroadcastPortal() {
   const canvasRef = useRef(null);
   const [isLive, setIsLive] = useState(false);
   const [accentColor, setAccentColor] = useState('purple'); // purple, pink, orange, lime
   const [showMediaPanel, setShowMediaPanel] = useState(false);
-  const [mediaType, setMediaType] = useState('upload'); // upload, video, gamma
+  const [mediaType, setMediaType] = useState('upload'); // upload, video, gamma, spotify, apple, soundcloud
+  const [showElevator, setShowElevator] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -281,6 +285,13 @@ export default function BroadcastPortal() {
               Paid
             </span>
             <button
+              onClick={() => setShowElevator(true)}
+              className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2"
+            >
+              <Layers className="w-4 h-4" />
+              Elevator
+            </button>
+            <button
               onClick={() => setIsLive(!isLive)}
               className={`px-4 py-2 rounded-full text-xs uppercase tracking-wider transition-all ${
                 isLive 
@@ -317,9 +328,26 @@ export default function BroadcastPortal() {
               <FileText className="w-4 h-4 text-cyan-400" />
               <span className="text-sm">Gamma Slides</span>
             </button>
-            <button className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white">
-              <Calendar className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm">Schedule</span>
+            <button 
+              onClick={() => { setMediaType('spotify'); setShowMediaPanel(true); }}
+              className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white"
+            >
+              <MusicIcon className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm">Spotify</span>
+            </button>
+            <button 
+              onClick={() => { setMediaType('apple'); setShowMediaPanel(true); }}
+              className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white"
+            >
+              <MusicIcon className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm">Apple Music</span>
+            </button>
+            <button 
+              onClick={() => { setMediaType('soundcloud'); setShowMediaPanel(true); }}
+              className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white"
+            >
+              <MusicIcon className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm">SoundCloud</span>
             </button>
           </div>
 
@@ -376,6 +404,24 @@ export default function BroadcastPortal() {
               {mediaType === 'gamma' && (
                 <GammaEmbed />
               )}
+              {mediaType === 'spotify' && (
+                <SocialEmbeds type="spotify" />
+              )}
+              {mediaType === 'apple' && (
+                <SocialEmbeds type="apple" />
+              )}
+              {mediaType === 'soundcloud' && (
+                <SocialEmbeds type="soundcloud" />
+              )}
+
+              {/* Spatial Audio Control */}
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs uppercase tracking-wider text-white/60">Spatial Audio</div>
+                  <Volume2 className="w-4 h-4 text-cyan-400" />
+                </div>
+                <SpatialAudio position={{ x: 0, y: 0, z: -5 }} />
+              </div>
             </div>
           </div>
         )}
@@ -410,6 +456,9 @@ export default function BroadcastPortal() {
           </div>
         </div>
       </div>
+
+      {/* 3D Elevator Navigation */}
+      <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />
     </div>
   );
 }
