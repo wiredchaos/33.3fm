@@ -24,6 +24,7 @@ export default function DJRedFang({ context = 'greeting' }) {
       }, 800);
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [context, isVisible]);
 
   const askRedFang = async (question) => {
