@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
+import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
 import { Radio, Mic, Music, User, Radio as Station } from 'lucide-react';
 

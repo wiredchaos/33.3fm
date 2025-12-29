@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from './utils';
+import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
 import { ArrowLeft, Music, Save } from 'lucide-react';
 
