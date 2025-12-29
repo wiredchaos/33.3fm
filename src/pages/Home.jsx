@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { Radio, Mic, Music, User, Radio as Station, Sparkles, Layers } from 'lucide-react';
+import { Radio, Mic, Music, User, Radio as Station, Sparkles, Layers, Crown, ShoppingBag } from 'lucide-react';
 import NeuroConcierge from '@/components/navigation/NeuroConcierge';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
 
@@ -151,6 +151,24 @@ export default function Home() {
               <Layers className="w-5 h-5" />
               3D Elevator
             </button>
+          </div>
+
+          {/* Monetization Quick Links */}
+          <div className="mt-4 flex gap-3">
+            <Link
+              to={createPageUrl('Subscription')}
+              className="px-4 py-2 bg-white/5 border border-red-500/30 text-red-400 rounded-full text-sm flex items-center gap-2 hover:bg-red-500/10 transition-all"
+            >
+              <Crown className="w-4 h-4" />
+              Subscribe
+            </Link>
+            <Link
+              to={createPageUrl('Store')}
+              className="px-4 py-2 bg-white/5 border border-cyan-400/30 text-cyan-400 rounded-full text-sm flex items-center gap-2 hover:bg-cyan-400/10 transition-all"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Store
+            </Link>
           </div>
         </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageCircle, Send, X, Minimize2 } from 'lucide-react';
+import TipButton from '@/components/monetization/TipButton';
 
 export default function LiveChat({ isLive = false }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,6 +64,7 @@ export default function LiveChat({ isLive = false }) {
           </div>
         </div>
         <div className="flex gap-2">
+          <TipButton recipientEmail="dj@33.3fm.com" recipientName="DJ Red Fang" room="broadcast" />
           <Button
             variant="ghost"
             size="icon"
