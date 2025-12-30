@@ -207,6 +207,77 @@ export default function BroadcastPortal() {
     rimLight.position.set(0, 2, -15);
     scene.add(rimLight);
 
+    // Floating energy particles
+    const energyParticles = new THREE.Group();
+    const particleCount = 300;
+    const particlePositions = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+      const particle = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03, 8, 8),
+        new THREE.MeshBasicMaterial({
+          color: Math.random() > 0.5 ? 0x00ffff : accentColors[accentColor],
+          transparent: true,
+          opacity: Math.random() * 0.5 + 0.3
+        })
+      );
+      particle.position.set(
+        (Math.random() - 0.5) * 30,
+        Math.random() * 15,
+        (Math.random() - 0.5) * 40
+      );
+      particlePositions.push({
+        velocity: {
+          x: (Math.random() - 0.5) * 0.02,
+          y: (Math.random() - 0.5) * 0.02,
+          z: Math.random() * 0.05 + 0.02
+        },
+        mesh: particle
+      });
+      energyParticles.add(particle);
+    }
+    scene.add(energyParticles);
+
+    // Holographic data streams
+    const dataStreams = [];
+    for (let i = 0; i < 5; i++) {
+      const streamGeometry = new THREE.BufferGeometry();
+      const streamPoints = [];
+      for (let j = 0; j < 20; j++) {
+        streamPoints.push(new THREE.Vector3(
+          (i - 2) * 3,
+          j * 0.5,
+          -5 - j * 0.3
+        ));
+      }
+      streamGeometry.setFromPoints(streamPoints);
+      const streamMaterial = new THREE.LineBasicMaterial({
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.4
+      });
+      const stream = new THREE.Line(streamGeometry, streamMaterial);
+      dataStreams.push({ line: stream, offset: i * 0.5 });
+      scene.add(stream);
+    }
+
+    // Volumetric light cones
+    const lightCones = [];
+    for (let i = 0; i < 4; i++) {
+      const coneGeometry = new THREE.ConeGeometry(2, 8, 32, 1, true);
+      const coneMaterial = new THREE.MeshBasicMaterial({
+        color: i % 2 === 0 ? 0x00ffff : accentColors[accentColor],
+        transparent: true,
+        opacity: 0.1,
+        side: THREE.DoubleSide
+      });
+      const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+      cone.position.set((i - 1.5) * 5, 10, -5);
+      cone.rotation.x = Math.PI;
+      lightCones.push(cone);
+      scene.add(cone);
+    }
+
     // Animation
     let time = 0;
     const animate = () => {
@@ -255,6 +326,37 @@ export default function BroadcastPortal() {
 
       // Lighting pulse
       cyanLight.intensity = 0.8 + Math.sin(time * 2) * 0.2;
+
+      // Energy particles movement
+      particlePositions.forEach((particle) => {
+        particle.mesh.position.x += particle.velocity.x;
+        particle.mesh.position.y += particle.velocity.y;
+        particle.mesh.position.z += particle.velocity.z;
+
+        if (particle.mesh.position.z > 20) {
+          particle.mesh.position.z = -20;
+        }
+        if (Math.abs(particle.mesh.position.x) > 15) {
+          particle.velocity.x *= -1;
+        }
+        if (particle.mesh.position.y > 15 || particle.mesh.position.y < 0) {
+          particle.velocity.y *= -1;
+        }
+
+        particle.mesh.material.opacity = 0.3 + Math.sin(time * 5 + particle.mesh.position.x) * 0.2;
+      });
+
+      // Data streams animation
+      dataStreams.forEach((stream, idx) => {
+        stream.line.material.opacity = 0.4 + Math.sin(time * 2 + stream.offset) * 0.2;
+        stream.line.position.y = Math.sin(time + stream.offset) * 0.5;
+      });
+
+      // Light cones pulse
+      lightCones.forEach((cone, i) => {
+        cone.material.opacity = 0.1 + Math.sin(time * 3 + i) * 0.05;
+        cone.rotation.y = time * (0.2 + i * 0.1);
+      });
 
       renderer.render(scene, camera);
     };

@@ -117,6 +117,71 @@ export default function ArtistProfile() {
     rimLight.position.set(0, 0, -5);
     scene.add(rimLight);
 
+    // Floating light particles
+    const lightParticles = new THREE.Group();
+    for (let i = 0; i < 100; i++) {
+      const particle = new THREE.Mesh(
+        new THREE.SphereGeometry(0.02, 8, 8),
+        new THREE.MeshBasicMaterial({
+          color: 0x00ffff,
+          transparent: true,
+          opacity: Math.random() * 0.6 + 0.2
+        })
+      );
+      particle.position.set(
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 10
+      );
+      particle.userData = {
+        velocity: new THREE.Vector3(
+          (Math.random() - 0.5) * 0.01,
+          (Math.random() - 0.5) * 0.01,
+          (Math.random() - 0.5) * 0.01
+        )
+      };
+      lightParticles.add(particle);
+    }
+    scene.add(lightParticles);
+
+    // Holographic rings around avatar
+    const holoRings = [];
+    for (let i = 0; i < 3; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(1.2 + i * 0.3, 1.3 + i * 0.3, 64),
+        new THREE.MeshBasicMaterial({
+          color: 0x00ffff,
+          transparent: true,
+          opacity: 0.3,
+          side: THREE.DoubleSide
+        })
+      );
+      ring.position.copy(avatar.position);
+      ring.rotation.x = Math.PI / 2;
+      holoRings.push(ring);
+      scene.add(ring);
+    }
+
+    // Neon glow lines
+    const neonLines = [];
+    for (let i = 0; i < 8; i++) {
+      const points = [];
+      const startX = (Math.random() - 0.5) * 10;
+      const startY = (Math.random() - 0.5) * 8;
+      points.push(new THREE.Vector3(startX, startY, -5));
+      points.push(new THREE.Vector3(startX + (Math.random() - 0.5) * 2, startY + Math.random() * 3, -3));
+      
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.3
+      });
+      const line = new THREE.Line(lineGeometry, lineMaterial);
+      neonLines.push(line);
+      scene.add(line);
+    }
+
     // Animation
     let time = 0;
     const animate = () => {
@@ -143,6 +208,29 @@ export default function ArtistProfile() {
       // Background panels slow rotation
       bgPanels.forEach((panel, i) => {
         panel.rotation.y = (i - 1) * 0.2 + Math.sin(time * 0.1 + i) * 0.1;
+      });
+
+      // Light particles drift
+      lightParticles.children.forEach((particle) => {
+        particle.position.add(particle.userData.velocity);
+        
+        if (Math.abs(particle.position.x) > 7.5) particle.userData.velocity.x *= -1;
+        if (Math.abs(particle.position.y) > 5) particle.userData.velocity.y *= -1;
+        if (Math.abs(particle.position.z) > 5) particle.userData.velocity.z *= -1;
+
+        particle.material.opacity = 0.2 + Math.sin(time * 2 + particle.position.x) * 0.3;
+      });
+
+      // Holographic rings rotation
+      holoRings.forEach((ring, i) => {
+        ring.rotation.z = time * (0.3 + i * 0.1);
+        ring.material.opacity = 0.3 + Math.sin(time * 2 + i) * 0.1;
+        ring.scale.setScalar(1 + Math.sin(time * 1.5 + i * 0.5) * 0.05);
+      });
+
+      // Neon lines pulse
+      neonLines.forEach((line, i) => {
+        line.material.opacity = 0.3 + Math.sin(time * 3 + i * 0.5) * 0.2;
       });
 
       renderer.render(scene, camera);

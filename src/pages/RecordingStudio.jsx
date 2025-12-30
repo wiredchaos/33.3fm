@@ -61,6 +61,68 @@ export default function RecordingStudio() {
       opacity: isSaving ? 1 : 0,
     });
 
+    // Particle system - floating audio particles
+    const particleGeometry = new THREE.BufferGeometry();
+    const particleCount = 200;
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 20;
+      positions[i * 3 + 1] = Math.random() * 10;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      velocities.push({
+        x: (Math.random() - 0.5) * 0.02,
+        y: Math.random() * 0.03 + 0.01,
+        z: (Math.random() - 0.5) * 0.02
+      });
+    }
+
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMaterial = new THREE.PointsMaterial({
+      color: 0x00ffff,
+      size: 0.05,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending
+    });
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particles);
+
+    // Holographic display panels
+    const holoDisplays = [];
+    const holoPositions = [
+      { x: -3, y: 3, z: -2, scale: 1 },
+      { x: 3, y: 2.5, z: -1.5, scale: 0.8 }
+    ];
+
+    holoPositions.forEach((pos) => {
+      const holoGeometry = new THREE.PlaneGeometry(1.5, 1);
+      const holoMaterial = new THREE.MeshStandardMaterial({
+        color: 0x00ffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.DoubleSide
+      });
+      const holo = new THREE.Mesh(holoGeometry, holoMaterial);
+      holo.position.set(pos.x, pos.y, pos.z);
+      holo.scale.setScalar(pos.scale);
+      holoDisplays.push(holo);
+      scene.add(holo);
+
+      // Holo scan lines
+      const scanLines = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 0.02),
+        new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8 })
+      );
+      scanLines.position.copy(holo.position);
+      scanLines.position.z += 0.01;
+      holoDisplays.push(scanLines);
+      scene.add(scanLines);
+    });
+
     // Vocal booth - glass enclosure with red accents
     const boothGeometry = new THREE.BoxGeometry(3, 3.5, 3);
     const booth = new THREE.Mesh(boothGeometry, glassMaterial);
@@ -199,6 +261,17 @@ export default function RecordingStudio() {
     accentLight.position.set(0, 5, 5);
     scene.add(accentLight);
 
+    // Volumetric fog lights
+    const volumetricLights = [];
+    for (let i = 0; i < 3; i++) {
+      const vLight = new THREE.SpotLight(i === 1 ? 0xff0000 : 0x00ffff, 0.5, 15, Math.PI / 6, 0.5);
+      vLight.position.set((i - 1) * 5, 6, -2);
+      vLight.target.position.set((i - 1) * 5, 0, 0);
+      scene.add(vLight);
+      scene.add(vLight.target);
+      volumetricLights.push(vLight);
+    }
+
     // Animation
     let time = 0;
     const animate = () => {
@@ -237,6 +310,37 @@ export default function RecordingStudio() {
       } else {
         saveIndicator.scale.setScalar(0);
       }
+
+      // Particle animation
+      const positions = particles.geometry.attributes.position.array;
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] += velocities[i].x;
+        positions[i * 3 + 1] += velocities[i].y;
+        positions[i * 3 + 2] += velocities[i].z;
+
+        if (positions[i * 3 + 1] > 10) {
+          positions[i * 3 + 1] = 0;
+          positions[i * 3] = (Math.random() - 0.5) * 20;
+          positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+        }
+      }
+      particles.geometry.attributes.position.needsUpdate = true;
+      particles.rotation.y = time * 0.05;
+
+      // Holographic displays
+      holoDisplays.forEach((holo, i) => {
+        if (i % 2 === 0) {
+          holo.material.emissiveIntensity = 0.5 + Math.sin(time * 3 + i) * 0.2;
+          holo.rotation.y = Math.sin(time * 0.5 + i) * 0.1;
+        } else {
+          holo.position.y += Math.sin(time * 10 + i) * 0.005;
+        }
+      });
+
+      // Volumetric lights pulse
+      volumetricLights.forEach((light, i) => {
+        light.intensity = 0.5 + Math.sin(time * 2 + i) * 0.2;
+      });
 
       renderer.render(scene, camera);
     };

@@ -119,6 +119,74 @@ export default function PodcastBooth() {
     cyanLight.position.set(0, 2, 2);
     scene.add(cyanLight);
 
+    // Volumetric light beams
+    const lightBeams = [];
+    for (let i = 0; i < 3; i++) {
+      const beamGeometry = new THREE.CylinderGeometry(0.5, 1.5, 8, 32, 1, true);
+      const beamMaterial = new THREE.MeshBasicMaterial({
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.08,
+        side: THREE.DoubleSide
+      });
+      const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+      beam.position.set((i - 1) * 3, 8, -2);
+      lightBeams.push(beam);
+      scene.add(beam);
+    }
+
+    // Floating sound wave particles
+    const soundParticles = new THREE.Group();
+    const soundParticleData = [];
+    
+    for (let i = 0; i < 150; i++) {
+      const particle = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03, 8, 8),
+        new THREE.MeshBasicMaterial({
+          color: Math.random() > 0.3 ? 0x00ffff : 0xff0000,
+          transparent: true,
+          opacity: 0.6
+        })
+      );
+      particle.position.set(
+        (Math.random() - 0.5) * 20,
+        Math.random() * 8,
+        (Math.random() - 0.5) * 15
+      );
+      soundParticleData.push({
+        mesh: particle,
+        baseY: particle.position.y,
+        speed: Math.random() * 0.02 + 0.01,
+        amplitude: Math.random() * 0.3 + 0.2
+      });
+      soundParticles.add(particle);
+    }
+    scene.add(soundParticles);
+
+    // Holographic frequency rings
+    const freqRings = [];
+    for (let i = 0; i < 5; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(2 + i * 0.5, 0.02, 16, 100),
+        new THREE.MeshBasicMaterial({
+          color: 0x00ffff,
+          transparent: true,
+          opacity: 0.4
+        })
+      );
+      ring.position.set(0, 1.5, -3);
+      ring.rotation.x = Math.PI / 2;
+      freqRings.push(ring);
+      scene.add(ring);
+    }
+
+    // Neon grid floor
+    const gridHelper = new THREE.GridHelper(20, 20, 0x00ffff, 0x00ffff);
+    gridHelper.material.transparent = true;
+    gridHelper.material.opacity = 0.1;
+    gridHelper.position.y = 0;
+    scene.add(gridHelper);
+
     // Animation
     let time = 0;
     const animate = () => {
@@ -143,6 +211,29 @@ export default function PodcastBooth() {
 
       // Update ON AIR indicator
       onAirMaterial.emissiveIntensity = isLive ? (0.8 + Math.sin(time * 4) * 0.2) : 0.1;
+
+      // Light beams rotation
+      lightBeams.forEach((beam, i) => {
+        beam.rotation.y = time * (0.2 + i * 0.1);
+        beam.material.opacity = 0.08 + Math.sin(time * 2 + i) * 0.03;
+      });
+
+      // Sound particles wave motion
+      soundParticleData.forEach((data, i) => {
+        data.mesh.position.y = data.baseY + Math.sin(time * 5 + i * 0.1) * data.amplitude;
+        data.mesh.position.x += Math.sin(time + i) * 0.005;
+        data.mesh.material.opacity = 0.6 + Math.sin(time * 3 + i * 0.2) * 0.3;
+      });
+      soundParticles.rotation.y = time * 0.05;
+
+      // Frequency rings pulse
+      freqRings.forEach((ring, i) => {
+        ring.scale.setScalar(1 + Math.sin(time * 2 - i * 0.5) * 0.1);
+        ring.material.opacity = 0.4 + Math.sin(time * 3 - i * 0.3) * 0.2;
+      });
+
+      // Grid pulse with audio
+      gridHelper.material.opacity = 0.1 + Math.sin(time * 4) * 0.05;
 
       renderer.render(scene, camera);
     };
