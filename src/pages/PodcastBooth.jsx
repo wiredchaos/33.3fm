@@ -22,170 +22,301 @@ export default function PodcastBooth() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    // Materials
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      metalness: 0.1,
-      roughness: 0.05,
-      transparent: true,
-      opacity: 0.2,
-      transmission: 0.95,
-      thickness: 0.5,
+    // Realistic Materials
+    const woodMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2d1f15,
+      roughness: 0.85,
+      metalness: 0.05,
     });
 
-    const cyanGlowMaterial = new THREE.MeshStandardMaterial({
-      color: 0x00ffff,
+    const metalMaterial = new THREE.MeshStandardMaterial({
+      color: 0x383838,
+      roughness: 0.25,
+      metalness: 0.95,
+    });
+
+    const fabricMaterial = new THREE.MeshStandardMaterial({
+      color: 0x1a1a1a,
+      roughness: 0.95,
+      metalness: 0,
+    });
+
+    const screenMaterial = new THREE.MeshStandardMaterial({
+      color: 0x0a0a0a,
       emissive: 0x00ffff,
-      emissiveIntensity: 0.3,
+      emissiveIntensity: 0.4,
+      roughness: 0.15,
+      metalness: 0.8,
     });
 
-    // Broadcast desk - floating glass surface
-    const deskGeometry = new THREE.BoxGeometry(6, 0.1, 3);
-    const desk = new THREE.Mesh(deskGeometry, glassMaterial);
-    desk.position.y = 1;
-    scene.add(desk);
+    const ledMaterial = new THREE.MeshStandardMaterial({
+      color: isLive ? 0xff0000 : 0x00ff00,
+      emissive: isLive ? 0xff0000 : 0x00ff00,
+      emissiveIntensity: isLive ? 1.2 : 0.6,
+    });
 
-    // Desk edge glow
-    const edgeGeometry = new THREE.BoxGeometry(6.1, 0.05, 3.1);
-    const deskEdge = new THREE.Mesh(edgeGeometry, cyanGlowMaterial);
-    deskEdge.position.y = 1;
-    scene.add(deskEdge);
+    // Professional podcast table
+    const table = new THREE.Group();
+    
+    // Table top - realistic wood
+    const tableTop = new THREE.Mesh(
+      new THREE.BoxGeometry(6, 0.12, 3),
+      woodMaterial
+    );
+    tableTop.position.y = 1;
+    table.add(tableTop);
+    
+    // Table edge trim
+    const edgeTrim = new THREE.Mesh(
+      new THREE.BoxGeometry(6.1, 0.05, 3.1),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 })
+    );
+    edgeTrim.position.y = 1.08;
+    table.add(edgeTrim);
+    
+    // Table legs
+    const legPositions = [
+      { x: -2.5, z: -1.2 },
+      { x: 2.5, z: -1.2 },
+      { x: -2.5, z: 1.2 },
+      { x: 2.5, z: 1.2 }
+    ];
+    
+    legPositions.forEach(pos => {
+      const leg = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.1, 0.95, 16),
+        metalMaterial
+      );
+      leg.position.set(pos.x, 0.5, pos.z);
+      table.add(leg);
+    });
+    
+    scene.add(table);
 
-    // Microphone stands (abstract)
-    const micStands = [];
+    // Professional broadcast microphones
+    const micSetups = [];
     for (let i = 0; i < 3; i++) {
-      const standGroup = new THREE.Group();
+      const micGroup = new THREE.Group();
       
-      const standGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 8);
-      const stand = new THREE.Mesh(standGeometry, glassMaterial);
-      stand.position.y = 1.75;
+      // Boom arm base
+      const base = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12, 0.15, 0.06, 32),
+        metalMaterial
+      );
+      base.position.y = 1.09;
+      micGroup.add(base);
       
-      const micGeometry = new THREE.SphereGeometry(0.15, 16, 16);
-      const mic = new THREE.Mesh(micGeometry, cyanGlowMaterial);
-      mic.position.y = 2.5;
+      // Boom arm vertical pole
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.025, 0.6, 16),
+        metalMaterial
+      );
+      pole.position.y = 1.4;
+      micGroup.add(pole);
       
-      standGroup.add(stand);
-      standGroup.add(mic);
-      standGroup.position.x = (i - 1) * 2;
-      standGroup.position.z = 0;
+      // Boom horizontal arm
+      const boomArm = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.02, 0.02, 1.2, 16),
+        metalMaterial
+      );
+      boomArm.position.set(0.55, 1.7, 0);
+      boomArm.rotation.z = Math.PI / 2;
+      micGroup.add(boomArm);
       
-      micStands.push(standGroup);
-      scene.add(standGroup);
+      // Microphone body - Shure SM7B style
+      const micBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.18, 0.12),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.5, metalness: 0.3 })
+      );
+      micBody.position.set(1.1, 1.7, 0);
+      micGroup.add(micBody);
+      
+      // Mic grille
+      const grille = new THREE.Mesh(
+        new THREE.BoxGeometry(0.11, 0.16, 0.11),
+        new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.7, metalness: 0.6 })
+      );
+      grille.position.set(1.1, 1.7, 0);
+      micGroup.add(grille);
+      
+      // Foam windscreen
+      const windscreen = new THREE.Mesh(
+        new THREE.BoxGeometry(0.13, 0.19, 0.13),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 1, transparent: true, opacity: 0.8 })
+      );
+      windscreen.position.set(1.1, 1.7, 0);
+      micGroup.add(windscreen);
+      
+      // Pop filter
+      const popFrame = new THREE.Mesh(
+        new THREE.TorusGeometry(0.18, 0.012, 16, 32),
+        metalMaterial
+      );
+      popFrame.position.set(0.85, 1.7, 0);
+      popFrame.rotation.y = Math.PI / 2;
+      micGroup.add(popFrame);
+      
+      const popMesh = new THREE.Mesh(
+        new THREE.CircleGeometry(0.18, 32),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0a, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+      );
+      popMesh.position.set(0.85, 1.7, 0);
+      popMesh.rotation.y = Math.PI / 2;
+      micGroup.add(popMesh);
+      
+      micGroup.position.x = (i - 1) * 2.2;
+      micSetups.push(micGroup);
+      scene.add(micGroup);
     }
 
-    // Back panel with waveform visualization
-    const panelGeometry = new THREE.PlaneGeometry(10, 6);
-    const panel = new THREE.Mesh(panelGeometry, glassMaterial);
-    panel.position.z = -4;
-    panel.position.y = 3;
-    scene.add(panel);
-
-    // Waveform bars
-    const waveformBars = [];
-    for (let i = 0; i < 20; i++) {
-      const barGeometry = new THREE.BoxGeometry(0.2, 1, 0.1);
-      const bar = new THREE.Mesh(barGeometry, cyanGlowMaterial);
-      bar.position.x = (i - 10) * 0.4;
-      bar.position.y = 3;
-      bar.position.z = -3.9;
-      waveformBars.push(bar);
-      scene.add(bar);
+    // Back wall with acoustic treatment
+    const backWall = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 8),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 })
+    );
+    backWall.position.set(0, 3, -4.5);
+    scene.add(backWall);
+    
+    // Acoustic foam panels
+    const foamPanels = [];
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 8; col++) {
+        const foam = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.6, 0.15),
+          new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 1 })
+        );
+        foam.position.set(
+          -3 + col * 0.8,
+          2 + row * 0.8,
+          -4.4
+        );
+        foamPanels.push(foam);
+        scene.add(foam);
+      }
     }
+    
+    // Monitor screens on wall
+    for (let i = 0; i < 2; i++) {
+      const monitor = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.6, 0.08),
+        screenMaterial
+      );
+      monitor.position.set(-1.5 + i * 3, 3.5, -4.3);
+      scene.add(monitor);
+      
+      const bezel = new THREE.Mesh(
+        new THREE.BoxGeometry(0.85, 0.65, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.3 })
+      );
+      bezel.position.set(-1.5 + i * 3, 3.5, -4.25);
+      scene.add(bezel);
+    }
+    
+    // ON AIR sign - realistic LED panel
+    const onAirBox = new THREE.Mesh(
+      new THREE.BoxGeometry(1.6, 0.5, 0.12),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 })
+    );
+    onAirBox.position.set(0, 5.2, -4.3);
+    scene.add(onAirBox);
+    
+    const onAirLight = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.4, 0.35),
+      new THREE.MeshStandardMaterial({
+        color: isLive ? 0xff0000 : 0x330000,
+        emissive: isLive ? 0xff0000 : 0x330000,
+        emissiveIntensity: isLive ? 1.5 : 0.2,
+      })
+    );
+    onAirLight.position.set(0, 5.2, -4.24);
+    scene.add(onAirLight);
 
-    // ON AIR indicator
-    const onAirGeometry = new THREE.PlaneGeometry(1.5, 0.4);
-    const onAirMaterial = new THREE.MeshStandardMaterial({
-      color: 0xff0000,
-      emissive: 0xff0000,
-      emissiveIntensity: isLive ? 0.8 : 0.1,
-      transparent: true,
-      opacity: isLive ? 1 : 0.3,
-    });
-    const onAir = new THREE.Mesh(onAirGeometry, onAirMaterial);
-    onAir.position.set(0, 5, -3.9);
-    scene.add(onAir);
+    // Studio chairs
+    for (let i = 0; i < 3; i++) {
+      const chair = new THREE.Group();
+      
+      const seat = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.35, 0.32, 0.12, 32),
+        fabricMaterial
+      );
+      seat.position.y = 0.7;
+      chair.add(seat);
+      
+      const backrest = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 0.65, 0.12),
+        fabricMaterial
+      );
+      backrest.position.set(0, 1.1, -0.22);
+      chair.add(backrest);
+      
+      const wheelBase = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.28, 0.28, 0.06, 5),
+        metalMaterial
+      );
+      wheelBase.position.y = 0.12;
+      chair.add(wheelBase);
+      
+      chair.position.set((i - 1) * 2.2, 0, 0.8);
+      scene.add(chair);
+    }
+    
+    // Floor
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(15, 15),
+      woodMaterial
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = 0;
+    scene.add(floor);
+    
+    // Ceiling
+    const ceiling = new THREE.Mesh(
+      new THREE.PlaneGeometry(15, 15),
+      new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9, side: THREE.DoubleSide })
+    );
+    ceiling.rotation.x = -Math.PI / 2;
+    ceiling.position.y = 6;
+    scene.add(ceiling);
+    
+    // Ceiling lights - studio lighting
+    for (let i = 0; i < 3; i++) {
+      const lightFixture = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.3, 0.15, 32),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.6 })
+      );
+      lightFixture.position.set((i - 1) * 2.5, 5.85, -1);
+      scene.add(lightFixture);
+    }
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.SpotLight(0xffffff, 0.5);
-    keyLight.position.set(0, 8, 5);
-    keyLight.angle = Math.PI / 6;
-    keyLight.penumbra = 0.5;
-    scene.add(keyLight);
-
-    const cyanLight = new THREE.PointLight(0x00ffff, 0.6, 20);
-    cyanLight.position.set(0, 2, 2);
-    scene.add(cyanLight);
-
-    // Volumetric light beams
-    const lightBeams = [];
+    // Studio spotlights
     for (let i = 0; i < 3; i++) {
-      const beamGeometry = new THREE.CylinderGeometry(0.5, 1.5, 8, 32, 1, true);
-      const beamMaterial = new THREE.MeshBasicMaterial({
-        color: 0x00ffff,
-        transparent: true,
-        opacity: 0.08,
-        side: THREE.DoubleSide
-      });
-      const beam = new THREE.Mesh(beamGeometry, beamMaterial);
-      beam.position.set((i - 1) * 3, 8, -2);
-      lightBeams.push(beam);
-      scene.add(beam);
+      const spotlight = new THREE.SpotLight(0xffe8d6, 1.5, 25, Math.PI / 8, 0.4);
+      spotlight.position.set((i - 1) * 2.5, 5.8, -1);
+      spotlight.target.position.set((i - 1) * 2.2, 1, 0);
+      spotlight.castShadow = true;
+      scene.add(spotlight);
+      scene.add(spotlight.target);
     }
 
-    // Floating sound wave particles
-    const soundParticles = new THREE.Group();
-    const soundParticleData = [];
+    // Monitor backlights
+    const monitorLight = new THREE.PointLight(0x00aaff, 0.7, 8);
+    monitorLight.position.set(0, 3.5, -3.5);
+    scene.add(monitorLight);
     
-    for (let i = 0; i < 150; i++) {
-      const particle = new THREE.Mesh(
-        new THREE.SphereGeometry(0.03, 8, 8),
-        new THREE.MeshBasicMaterial({
-          color: Math.random() > 0.3 ? 0x00ffff : 0xff0000,
-          transparent: true,
-          opacity: 0.6
-        })
-      );
-      particle.position.set(
-        (Math.random() - 0.5) * 20,
-        Math.random() * 8,
-        (Math.random() - 0.5) * 15
-      );
-      soundParticleData.push({
-        mesh: particle,
-        baseY: particle.position.y,
-        speed: Math.random() * 0.02 + 0.01,
-        amplitude: Math.random() * 0.3 + 0.2
-      });
-      soundParticles.add(particle);
-    }
-    scene.add(soundParticles);
+    // ON AIR indicator light
+    const onAirGlow = new THREE.PointLight(
+      isLive ? 0xff0000 : 0x003300,
+      isLive ? 1.2 : 0.3,
+      10
+    );
+    onAirGlow.position.set(0, 5.2, -3.5);
+    scene.add(onAirGlow);
 
-    // Holographic frequency rings
-    const freqRings = [];
-    for (let i = 0; i < 5; i++) {
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(2 + i * 0.5, 0.02, 16, 100),
-        new THREE.MeshBasicMaterial({
-          color: 0x00ffff,
-          transparent: true,
-          opacity: 0.4
-        })
-      );
-      ring.position.set(0, 1.5, -3);
-      ring.rotation.x = Math.PI / 2;
-      freqRings.push(ring);
-      scene.add(ring);
-    }
 
-    // Neon grid floor
-    const gridHelper = new THREE.GridHelper(20, 20, 0x00ffff, 0x00ffff);
-    gridHelper.material.transparent = true;
-    gridHelper.material.opacity = 0.1;
-    gridHelper.position.y = 0;
-    scene.add(gridHelper);
 
     // Animation
     let time = 0;
@@ -198,42 +329,16 @@ export default function PodcastBooth() {
       camera.position.y = 2 + Math.sin(time * 0.15) * 0.3;
       camera.lookAt(0, 1.5, 0);
 
-      // Waveform animation
-      waveformBars.forEach((bar, i) => {
-        const wave = Math.sin(time * 3 + i * 0.5) * 0.5 + 0.5;
-        bar.scale.y = 0.3 + wave * 1.5;
-      });
-
       // Microphone subtle movement
-      micStands.forEach((stand, i) => {
-        stand.position.y = Math.sin(time * 0.5 + i) * 0.05;
+      micSetups.forEach((setup, i) => {
+        setup.rotation.y = Math.sin(time * 0.3 + i) * 0.02;
       });
 
       // Update ON AIR indicator
-      onAirMaterial.emissiveIntensity = isLive ? (0.8 + Math.sin(time * 4) * 0.2) : 0.1;
+      onAirLight.material.emissiveIntensity = isLive ? (1.5 + Math.sin(time * 4) * 0.3) : 0.2;
+      onAirGlow.intensity = isLive ? (1.2 + Math.sin(time * 4) * 0.3) : 0.3;
 
-      // Light beams rotation
-      lightBeams.forEach((beam, i) => {
-        beam.rotation.y = time * (0.2 + i * 0.1);
-        beam.material.opacity = 0.08 + Math.sin(time * 2 + i) * 0.03;
-      });
 
-      // Sound particles wave motion
-      soundParticleData.forEach((data, i) => {
-        data.mesh.position.y = data.baseY + Math.sin(time * 5 + i * 0.1) * data.amplitude;
-        data.mesh.position.x += Math.sin(time + i) * 0.005;
-        data.mesh.material.opacity = 0.6 + Math.sin(time * 3 + i * 0.2) * 0.3;
-      });
-      soundParticles.rotation.y = time * 0.05;
-
-      // Frequency rings pulse
-      freqRings.forEach((ring, i) => {
-        ring.scale.setScalar(1 + Math.sin(time * 2 - i * 0.5) * 0.1);
-        ring.material.opacity = 0.4 + Math.sin(time * 3 - i * 0.3) * 0.2;
-      });
-
-      // Grid pulse with audio
-      gridHelper.material.opacity = 0.1 + Math.sin(time * 4) * 0.05;
 
       renderer.render(scene, camera);
     };

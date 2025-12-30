@@ -20,167 +20,177 @@ export default function ArtistProfile() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    // Materials
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
+    // Gallery Materials - Clean iOS Aesthetic
+    const whiteMaterial = new THREE.MeshStandardMaterial({
+      color: 0xf5f5f5,
+      roughness: 0.2,
       metalness: 0.1,
-      roughness: 0.05,
-      transparent: true,
-      opacity: 0.15,
-      transmission: 0.95,
-      thickness: 0.5,
     });
 
-    const cyanGlowMaterial = new THREE.MeshStandardMaterial({
+    const frameMaterial = new THREE.MeshStandardMaterial({
+      color: 0xe0e0e0,
+      roughness: 0.3,
+      metalness: 0.2,
+    });
+
+    const accentMaterial = new THREE.MeshStandardMaterial({
       color: 0x00ffff,
       emissive: 0x00ffff,
-      emissiveIntensity: 0.3,
+      emissiveIntensity: 0.4,
+      roughness: 0.2,
+      metalness: 0.8,
     });
 
-    // Central identity panel - main glass surface
-    const mainPanelGeometry = new THREE.PlaneGeometry(4, 5);
-    const mainPanel = new THREE.Mesh(mainPanelGeometry, glassMaterial);
-    mainPanel.position.z = 0;
-    scene.add(mainPanel);
+    const floorMaterial = new THREE.MeshStandardMaterial({
+      color: 0xcccccc,
+      roughness: 0.1,
+      metalness: 0.3,
+    });
 
-    // Panel frame with cyan glow
-    const frameGeometry = new THREE.PlaneGeometry(4.1, 5.1);
-    const frameEdges = new THREE.EdgesGeometry(frameGeometry);
-    const frameMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 });
-    const frame = new THREE.LineSegments(frameEdges, frameMaterial);
-    frame.position.z = -0.05;
-    scene.add(frame);
-
-    // Artist avatar placeholder (floating glass sphere)
-    const avatarGeometry = new THREE.SphereGeometry(0.8, 32, 32);
-    const avatar = new THREE.Mesh(avatarGeometry, glassMaterial);
-    avatar.position.set(0, 1.5, 0.2);
-    scene.add(avatar);
-
-    const avatarGlow = new THREE.Mesh(
-      new THREE.SphereGeometry(0.85, 32, 32),
-      cyanGlowMaterial
+    // Gallery space - iOS clean aesthetic
+    const galleryFloor = new THREE.Mesh(
+      new THREE.PlaneGeometry(20, 20),
+      floorMaterial
     );
-    avatarGlow.position.copy(avatar.position);
-    scene.add(avatarGlow);
-
-    // Floating link cards (minimal)
-    const linkCards = [];
+    galleryFloor.rotation.x = -Math.PI / 2;
+    galleryFloor.position.y = 0;
+    scene.add(galleryFloor);
+    
+    const galleryCeiling = new THREE.Mesh(
+      new THREE.PlaneGeometry(20, 20),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, side: THREE.DoubleSide })
+    );
+    galleryCeiling.rotation.x = -Math.PI / 2;
+    galleryCeiling.position.y = 6;
+    scene.add(galleryCeiling);
+    
+    // Main feature wall - white
+    const mainWall = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 6),
+      whiteMaterial
+    );
+    mainWall.position.set(0, 3, -5);
+    scene.add(mainWall);
+    
+    // Avatar pedestal - gallery style
+    const pedestal = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.6, 0.7, 1.5, 32),
+      whiteMaterial
+    );
+    pedestal.position.set(0, 0.75, -2);
+    scene.add(pedestal);
+    
+    // Artist avatar sphere - modern sculpture
+    const avatarSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(0.7, 64, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.05,
+        metalness: 0.95,
+      })
+    );
+    avatarSphere.position.set(0, 2.2, -2);
+    scene.add(avatarSphere);
+    
+    // Accent ring around avatar
+    const accentRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.8, 0.04, 16, 64),
+      accentMaterial
+    );
+    accentRing.position.copy(avatarSphere.position);
+    accentRing.rotation.x = Math.PI / 2;
+    scene.add(accentRing);
+    
+    // Link display panels - minimalist frames
+    const linkPanels = [];
     for (let i = 0; i < 4; i++) {
-      const cardGeometry = new THREE.PlaneGeometry(3, 0.6);
-      const card = new THREE.Mesh(cardGeometry, glassMaterial);
-      card.position.set(0, 0.5 - i * 0.8, 0.1);
-      linkCards.push(card);
-      scene.add(card);
-
-      // Card edge highlight
-      const cardEdges = new THREE.EdgesGeometry(cardGeometry);
-      const cardFrame = new THREE.LineSegments(cardEdges, frameMaterial);
-      cardFrame.position.copy(card.position);
-      cardFrame.position.z -= 0.02;
-      scene.add(cardFrame);
-    }
-
-    // Background subtle glass panels
-    const bgPanels = [];
-    for (let i = 0; i < 3; i++) {
-      const bgPanel = new THREE.Mesh(
-        new THREE.PlaneGeometry(2, 6),
-        new THREE.MeshPhysicalMaterial({
-          color: 0x00ffff,
-          metalness: 0.1,
-          roughness: 0.1,
-          transparent: true,
-          opacity: 0.05,
-          transmission: 0.9,
-        })
+      const panel = new THREE.Group();
+      
+      // Panel backing
+      const back = new THREE.Mesh(
+        new THREE.BoxGeometry(3.5, 0.65, 0.08),
+        whiteMaterial
       );
-      bgPanel.position.set((i - 1) * 5, 0, -3);
-      bgPanel.rotation.y = (i - 1) * 0.2;
-      bgPanels.push(bgPanel);
-      scene.add(bgPanel);
+      panel.add(back);
+      
+      // Panel frame
+      const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(3.6, 0.7, 0.06),
+        frameMaterial
+      );
+      frame.position.z = -0.05;
+      panel.add(frame);
+      
+      // Accent line
+      const accent = new THREE.Mesh(
+        new THREE.BoxGeometry(3.5, 0.02, 0.01),
+        accentMaterial
+      );
+      accent.position.set(0, -0.3, 0.05);
+      panel.add(accent);
+      
+      panel.position.set(-4 + (i % 2) * 8, 3.5 - Math.floor(i / 2) * 1.2, -4.9);
+      linkPanels.push(panel);
+      scene.add(panel);
+    }
+    
+    // Side walls with minimal art
+    for (let side = 0; side < 2; side++) {
+      const wall = new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 6),
+        whiteMaterial
+      );
+      wall.position.set(side === 0 ? -7 : 7, 3, 0);
+      wall.rotation.y = side === 0 ? Math.PI / 2 : -Math.PI / 2;
+      scene.add(wall);
+      
+      // Art pieces on side walls
+      for (let i = 0; i < 2; i++) {
+        const artFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(1.5, 1.2, 0.1),
+          frameMaterial
+        );
+        artFrame.position.set(
+          side === 0 ? -6.9 : 6.9,
+          2.5 + i * 0.2,
+          -2 + i * 2
+        );
+        artFrame.rotation.y = side === 0 ? Math.PI / 2 : -Math.PI / 2;
+        scene.add(artFrame);
+      }
     }
 
-    // Lighting - bright editorial style
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // Gallery track lighting
+    for (let i = 0; i < 5; i++) {
+      const trackLight = new THREE.SpotLight(0xffffff, 1.8, 20, Math.PI / 8, 0.3);
+      trackLight.position.set(-4 + i * 2, 5.8, 0);
+      trackLight.target.position.set(-4 + i * 2, 0, 0);
+      trackLight.castShadow = true;
+      scene.add(trackLight);
+      scene.add(trackLight.target);
+    }
+    
+    // Avatar spotlight
+    const avatarSpot = new THREE.SpotLight(0xffffff, 2.5, 15, Math.PI / 6, 0.2);
+    avatarSpot.position.set(0, 5.5, -1);
+    avatarSpot.target.position.set(0, 2.2, -2);
+    scene.add(avatarSpot);
+    scene.add(avatarSpot.target);
+    
+    // Accent lighting
+    const accentLight = new THREE.PointLight(0x00ffff, 0.8, 10);
+    accentLight.position.set(0, 2.2, -1);
+    scene.add(accentLight);
+
+    // Ambient gallery lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    keyLight.position.set(5, 5, 5);
-    scene.add(keyLight);
-
-    const fillLight = new THREE.DirectionalLight(0x00ffff, 0.3);
-    fillLight.position.set(-5, 3, 3);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    fillLight.position.set(-5, 4, 5);
     scene.add(fillLight);
 
-    const rimLight = new THREE.PointLight(0x00ffff, 0.5, 20);
-    rimLight.position.set(0, 0, -5);
-    scene.add(rimLight);
 
-    // Floating light particles
-    const lightParticles = new THREE.Group();
-    for (let i = 0; i < 100; i++) {
-      const particle = new THREE.Mesh(
-        new THREE.SphereGeometry(0.02, 8, 8),
-        new THREE.MeshBasicMaterial({
-          color: 0x00ffff,
-          transparent: true,
-          opacity: Math.random() * 0.6 + 0.2
-        })
-      );
-      particle.position.set(
-        (Math.random() - 0.5) * 15,
-        (Math.random() - 0.5) * 10,
-        (Math.random() - 0.5) * 10
-      );
-      particle.userData = {
-        velocity: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01
-        )
-      };
-      lightParticles.add(particle);
-    }
-    scene.add(lightParticles);
-
-    // Holographic rings around avatar
-    const holoRings = [];
-    for (let i = 0; i < 3; i++) {
-      const ring = new THREE.Mesh(
-        new THREE.RingGeometry(1.2 + i * 0.3, 1.3 + i * 0.3, 64),
-        new THREE.MeshBasicMaterial({
-          color: 0x00ffff,
-          transparent: true,
-          opacity: 0.3,
-          side: THREE.DoubleSide
-        })
-      );
-      ring.position.copy(avatar.position);
-      ring.rotation.x = Math.PI / 2;
-      holoRings.push(ring);
-      scene.add(ring);
-    }
-
-    // Neon glow lines
-    const neonLines = [];
-    for (let i = 0; i < 8; i++) {
-      const points = [];
-      const startX = (Math.random() - 0.5) * 10;
-      const startY = (Math.random() - 0.5) * 8;
-      points.push(new THREE.Vector3(startX, startY, -5));
-      points.push(new THREE.Vector3(startX + (Math.random() - 0.5) * 2, startY + Math.random() * 3, -3));
-      
-      const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-      const lineMaterial = new THREE.LineBasicMaterial({
-        color: 0x00ffff,
-        transparent: true,
-        opacity: 0.3
-      });
-      const line = new THREE.Line(lineGeometry, lineMaterial);
-      neonLines.push(line);
-      scene.add(line);
-    }
 
     // Animation
     let time = 0;
@@ -195,43 +205,20 @@ export default function ArtistProfile() {
       camera.position.y = mouseY * 0.3;
       camera.lookAt(0, 0, 0);
 
-      // Avatar gentle float
-      avatar.position.y = 1.5 + Math.sin(time * 0.5) * 0.1;
-      avatarGlow.position.copy(avatar.position);
-      avatarGlow.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
+      // Avatar sphere rotation
+      avatarSphere.rotation.y = time * 0.3;
+      avatarSphere.rotation.x = Math.sin(time * 0.2) * 0.1;
+      
+      // Accent ring pulse
+      accentRing.scale.setScalar(1 + Math.sin(time * 2) * 0.03);
+      accentMaterial.emissiveIntensity = 0.4 + Math.sin(time * 3) * 0.1;
 
-      // Link cards subtle hover effect
-      linkCards.forEach((card, i) => {
-        card.position.z = 0.1 + Math.sin(time * 0.8 + i * 0.5) * 0.02;
+      // Link panels subtle depth
+      linkPanels.forEach((panel, i) => {
+        panel.position.z = -4.9 + Math.sin(time * 0.6 + i * 0.8) * 0.02;
       });
 
-      // Background panels slow rotation
-      bgPanels.forEach((panel, i) => {
-        panel.rotation.y = (i - 1) * 0.2 + Math.sin(time * 0.1 + i) * 0.1;
-      });
 
-      // Light particles drift
-      lightParticles.children.forEach((particle) => {
-        particle.position.add(particle.userData.velocity);
-        
-        if (Math.abs(particle.position.x) > 7.5) particle.userData.velocity.x *= -1;
-        if (Math.abs(particle.position.y) > 5) particle.userData.velocity.y *= -1;
-        if (Math.abs(particle.position.z) > 5) particle.userData.velocity.z *= -1;
-
-        particle.material.opacity = 0.2 + Math.sin(time * 2 + particle.position.x) * 0.3;
-      });
-
-      // Holographic rings rotation
-      holoRings.forEach((ring, i) => {
-        ring.rotation.z = time * (0.3 + i * 0.1);
-        ring.material.opacity = 0.3 + Math.sin(time * 2 + i) * 0.1;
-        ring.scale.setScalar(1 + Math.sin(time * 1.5 + i * 0.5) * 0.05);
-      });
-
-      // Neon lines pulse
-      neonLines.forEach((line, i) => {
-        line.material.opacity = 0.3 + Math.sin(time * 3 + i * 0.5) * 0.2;
-      });
 
       renderer.render(scene, camera);
     };
