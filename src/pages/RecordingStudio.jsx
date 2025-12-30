@@ -30,27 +30,37 @@ export default function RecordingStudio() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
 
-    // Materials
-    const glassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
+    // Realistic Materials
+    const woodMaterial = new THREE.MeshStandardMaterial({
+      color: 0x3d2817,
+      roughness: 0.8,
       metalness: 0.1,
-      roughness: 0.05,
-      transparent: true,
-      opacity: 0.2,
-      transmission: 0.95,
-      thickness: 0.5,
     });
 
-    const redGlowMaterial = new THREE.MeshStandardMaterial({
-      color: 0xff0000,
-      emissive: 0xff0000,
-      emissiveIntensity: isRecording ? 0.8 : 0.2,
+    const metalMaterial = new THREE.MeshStandardMaterial({
+      color: 0x444444,
+      roughness: 0.3,
+      metalness: 0.9,
     });
 
-    const cyanGlowMaterial = new THREE.MeshStandardMaterial({
-      color: 0x00ffff,
+    const fabricMaterial = new THREE.MeshStandardMaterial({
+      color: 0x222222,
+      roughness: 0.9,
+      metalness: 0,
+    });
+
+    const ledMaterial = new THREE.MeshStandardMaterial({
+      color: isRecording ? 0xff0000 : 0x00ff00,
+      emissive: isRecording ? 0xff0000 : 0x00ff00,
+      emissiveIntensity: isRecording ? 1 : 0.5,
+    });
+
+    const screenMaterial = new THREE.MeshStandardMaterial({
+      color: 0x0a0a0a,
       emissive: 0x00ffff,
-      emissiveIntensity: 0.4,
+      emissiveIntensity: 0.3,
+      roughness: 0.2,
+      metalness: 0.7,
     });
 
     const limeGlowMaterial = new THREE.MeshStandardMaterial({
@@ -123,143 +133,349 @@ export default function RecordingStudio() {
       scene.add(scanLines);
     });
 
-    // Vocal booth - glass enclosure with red accents
-    const boothGeometry = new THREE.BoxGeometry(3, 3.5, 3);
-    const booth = new THREE.Mesh(boothGeometry, glassMaterial);
-    booth.position.set(-3, 1.75, 0);
-    scene.add(booth);
-
-    const boothEdges = new THREE.EdgesGeometry(boothGeometry);
-    const boothEdgeMaterial = new THREE.LineBasicMaterial({ 
-      color: isRecording ? 0xff0000 : 0x00ffff, 
-      transparent: true, 
-      opacity: isRecording ? 0.9 : 0.6 
-    });
-    const boothFrame = new THREE.LineSegments(boothEdges, boothEdgeMaterial);
-    boothFrame.position.copy(booth.position);
-    scene.add(boothFrame);
-
-    // Professional microphone setup in booth
-    const micGroup = new THREE.Group();
-
-    // Mic boom arm
-    const boomGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 8);
-    const boom = new THREE.Mesh(boomGeometry, glassMaterial);
-    boom.position.y = 2;
-    boom.rotation.z = Math.PI / 6;
-
-    // Microphone
-    const micGeometry = new THREE.CylinderGeometry(0.1, 0.15, 0.4, 16);
-    const mic = new THREE.Mesh(micGeometry, redGlowMaterial);
-    mic.position.y = 2.5;
-
-    // Shock mount
-    const shockMount = new THREE.TorusGeometry(0.15, 0.02, 8, 16);
-    const shockMesh = new THREE.Mesh(shockMount, cyanGlowMaterial);
-    shockMesh.position.y = 2.5;
-    shockMesh.rotation.x = Math.PI / 2;
-
-    // Pop filter
-    const popFilter = new THREE.RingGeometry(0.25, 0.3, 32);
-    const popMesh = new THREE.Mesh(popFilter, glassMaterial);
-    popMesh.position.set(0, 2.5, 0.4);
-
-    micGroup.add(boom);
-    micGroup.add(mic);
-    micGroup.add(shockMesh);
-    micGroup.add(popMesh);
-    micGroup.position.set(-3, 0, 0);
-    scene.add(micGroup);
-
-    // Professional control room with mixing desk
-    const controlDesk = new THREE.Group();
-
-    // Main mixing desk surface
-    const deskGeometry = new THREE.BoxGeometry(4, 0.15, 2);
-    const desk = new THREE.Mesh(deskGeometry, glassMaterial);
-    desk.position.y = 1;
-    desk.rotation.x = -0.1;
-    controlDesk.add(desk);
-
-    // Desk frame with red accent
-    const deskFrameGeometry = new THREE.BoxGeometry(4.1, 0.1, 2.1);
-    const deskFrame = new THREE.Mesh(deskFrameGeometry, redGlowMaterial);
-    deskFrame.position.y = 1;
-    deskFrame.rotation.x = -0.1;
-    controlDesk.add(deskFrame);
-
-    // Faders and knobs
-    for (let i = 0; i < 16; i++) {
-      const fader = new THREE.Mesh(
-        new THREE.BoxGeometry(0.08, 0.3, 0.05),
-        i % 3 === 0 ? redGlowMaterial : cyanGlowMaterial
+    // Vocal booth walls - realistic
+    const boothWalls = new THREE.Group();
+    
+    // Floor
+    const floor = new THREE.Mesh(
+      new THREE.BoxGeometry(3, 0.1, 3),
+      woodMaterial
+    );
+    floor.position.y = 0;
+    boothWalls.add(floor);
+    
+    // Back wall with foam padding
+    const backWall = new THREE.Mesh(
+      new THREE.BoxGeometry(3, 3.5, 0.2),
+      fabricMaterial
+    );
+    backWall.position.set(0, 1.75, -1.4);
+    boothWalls.add(backWall);
+    
+    // Side walls
+    const leftWall = new THREE.Mesh(
+      new THREE.BoxGeometry(0.2, 3.5, 3),
+      fabricMaterial
+    );
+    leftWall.position.set(-1.4, 1.75, 0);
+    boothWalls.add(leftWall);
+    
+    const rightWall = new THREE.Mesh(
+      new THREE.BoxGeometry(0.2, 3.5, 3),
+      fabricMaterial
+    );
+    rightWall.position.set(1.4, 1.75, 0);
+    boothWalls.add(rightWall);
+    
+    // Acoustic foam panels
+    for (let i = 0; i < 12; i++) {
+      const foam = new THREE.Mesh(
+        new THREE.BoxGeometry(0.4, 0.4, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 1 })
       );
-      fader.position.set(-1.8 + (i * 0.24), 1.3, 0);
-      controlDesk.add(fader);
+      foam.position.set(
+        -1.2 + (i % 3) * 0.8,
+        2 + Math.floor(i / 3) * 0.5,
+        -1.35
+      );
+      boothWalls.add(foam);
+    }
+    
+    boothWalls.position.set(-3, 0, 0);
+    scene.add(boothWalls);
+
+    // Professional microphone setup
+    const micStand = new THREE.Group();
+    
+    // Base
+    const base = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.25, 0.3, 0.05, 32),
+      metalMaterial
+    );
+    base.position.y = 0.025;
+    micStand.add(base);
+    
+    // Stand pole
+    const pole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.02, 0.02, 1.5, 16),
+      metalMaterial
+    );
+    pole.position.y = 0.8;
+    micStand.add(pole);
+    
+    // Boom arm
+    const boomArm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.015, 0.015, 0.8, 16),
+      metalMaterial
+    );
+    boomArm.position.set(0.3, 1.6, 0);
+    boomArm.rotation.z = Math.PI / 3;
+    micStand.add(boomArm);
+    
+    // Microphone body - realistic Neumann style
+    const micBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.06, 0.35, 32),
+      new THREE.MeshStandardMaterial({ 
+        color: 0x2a2a2a, 
+        roughness: 0.4, 
+        metalness: 0.8 
+      })
+    );
+    micBody.position.set(0.5, 2, 0);
+    micBody.rotation.z = Math.PI / 2;
+    micStand.add(micBody);
+    
+    // Mic grille
+    const micGrille = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08, 32, 32),
+      new THREE.MeshStandardMaterial({ 
+        color: 0x4a4a4a, 
+        roughness: 0.6, 
+        metalness: 0.9 
+      })
+    );
+    micGrille.position.set(0.68, 2, 0);
+    micStand.add(micGrille);
+    
+    // Shock mount
+    const shockRing1 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.12, 0.008, 16, 32),
+      metalMaterial
+    );
+    shockRing1.position.set(0.5, 2, 0);
+    shockRing1.rotation.y = Math.PI / 2;
+    micStand.add(shockRing1);
+    
+    // Pop filter
+    const popFrame = new THREE.Mesh(
+      new THREE.TorusGeometry(0.15, 0.01, 16, 32),
+      metalMaterial
+    );
+    popFrame.position.set(0.35, 2, 0);
+    popFrame.rotation.y = Math.PI / 2;
+    micStand.add(popFrame);
+    
+    const popMesh = new THREE.Mesh(
+      new THREE.CircleGeometry(0.15, 32),
+      new THREE.MeshStandardMaterial({ 
+        color: 0x1a1a1a, 
+        transparent: true, 
+        opacity: 0.6,
+        side: THREE.DoubleSide 
+      })
+    );
+    popMesh.position.set(0.35, 2, 0);
+    popMesh.rotation.y = Math.PI / 2;
+    micStand.add(popMesh);
+    
+    micStand.position.set(-3, 0, 0);
+    scene.add(micStand);
+
+    // Professional mixing console
+    const mixingConsole = new THREE.Group();
+    
+    // Console base
+    const consoleBase = new THREE.Mesh(
+      new THREE.BoxGeometry(4.5, 0.8, 2.5),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7 })
+    );
+    consoleBase.position.y = 0.4;
+    mixingConsole.add(consoleBase);
+    
+    // Console surface - angled
+    const consoleSurface = new THREE.Mesh(
+      new THREE.BoxGeometry(4.5, 0.1, 2),
+      new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.6 })
+    );
+    consoleSurface.position.y = 0.85;
+    consoleSurface.rotation.x = -0.15;
+    mixingConsole.add(consoleSurface);
+    
+    // Channel strips with faders
+    for (let i = 0; i < 16; i++) {
+      // Channel strip background
+      const strip = new THREE.Mesh(
+        new THREE.BoxGeometry(0.2, 0.02, 1.5),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0a })
+      );
+      strip.position.set(-1.8 + (i * 0.23), 0.91, 0);
+      strip.rotation.x = -0.15;
+      mixingConsole.add(strip);
+      
+      // Fader
+      const fader = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.04, 0.12),
+        new THREE.MeshStandardMaterial({ 
+          color: i % 4 === 0 ? 0xff0000 : 0x666666,
+          roughness: 0.4,
+          metalness: 0.6
+        })
+      );
+      fader.position.set(-1.8 + (i * 0.23), 0.95, -0.2 + Math.random() * 0.4);
+      fader.rotation.x = -0.15;
+      mixingConsole.add(fader);
+      
+      // Knobs
+      for (let j = 0; j < 4; j++) {
+        const knob = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.03, 0.03, 0.02, 16),
+          metalMaterial
+        );
+        knob.position.set(-1.8 + (i * 0.23), 0.95, 0.4 - (j * 0.15));
+        knob.rotation.x = Math.PI / 2 - 0.15;
+        mixingConsole.add(knob);
+      }
     }
 
-    // Control panels - floating glass screens
-    const panelPositions = [
-      { x: -1.5, y: 2, z: -0.8 },
-      { x: 0, y: 2, z: -0.8 },
-      { x: 1.5, y: 2, z: -0.8 }
-    ];
+    // Studio monitors (speakers)
+    for (let i = 0; i < 2; i++) {
+      const speakerGroup = new THREE.Group();
+      
+      const speakerBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.4, 0.6, 0.35),
+        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 })
+      );
+      speakerGroup.add(speakerBox);
+      
+      const woofer = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.15, 0.15, 0.05, 32),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 })
+      );
+      woofer.rotation.x = Math.PI / 2;
+      woofer.position.z = 0.18;
+      speakerGroup.add(woofer);
+      
+      const tweeter = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.05, 0.03, 32),
+        metalMaterial
+      );
+      tweeter.rotation.x = Math.PI / 2;
+      tweeter.position.set(0, 0.2, 0.18);
+      speakerGroup.add(tweeter);
+      
+      // LED
+      const led = new THREE.Mesh(
+        new THREE.CircleGeometry(0.01, 16),
+        ledMaterial
+      );
+      led.position.set(0, -0.25, 0.18);
+      speakerGroup.add(led);
+      
+      speakerGroup.position.set(i === 0 ? -1.2 : 1.2, 1.6, -0.5);
+      speakerGroup.rotation.y = i === 0 ? 0.3 : -0.3;
+      mixingConsole.add(speakerGroup);
+    }
+    
+    // Computer monitors
+    for (let i = 0; i < 2; i++) {
+      const monitorStand = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.1, 0.3, 16),
+        metalMaterial
+      );
+      monitorStand.position.set(-0.6 + (i * 1.2), 1.2, -0.7);
+      mixingConsole.add(monitorStand);
+      
+      const screen = new THREE.Mesh(
+        new THREE.BoxGeometry(0.7, 0.5, 0.05),
+        screenMaterial
+      );
+      screen.position.set(-0.6 + (i * 1.2), 1.6, -0.7);
+      mixingConsole.add(screen);
+      
+      const screenBezel = new THREE.Mesh(
+        new THREE.BoxGeometry(0.72, 0.52, 0.03),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.3 })
+      );
+      screenBezel.position.set(-0.6 + (i * 1.2), 1.6, -0.68);
+      mixingConsole.add(screenBezel);
+    }
+    
+    mixingConsole.position.set(3, 0, 0);
+    scene.add(mixingConsole);
 
-    const controlPanels = [];
-    panelPositions.forEach((pos) => {
-      const panelGeometry = new THREE.PlaneGeometry(1.2, 1.5);
-      const panel = new THREE.Mesh(panelGeometry, glassMaterial);
-      panel.position.set(pos.x, pos.y, pos.z);
-      controlDesk.add(panel);
-      controlPanels.push(panel);
-    });
+    // Studio chair
+    const chair = new THREE.Group();
+    const seat = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.35, 0.3, 0.1, 32),
+      fabricMaterial
+    );
+    seat.position.y = 0.7;
+    chair.add(seat);
+    
+    const backrest = new THREE.Mesh(
+      new THREE.BoxGeometry(0.5, 0.6, 0.1),
+      fabricMaterial
+    );
+    backrest.position.set(0, 1.1, -0.2);
+    chair.add(backrest);
+    
+    const wheelBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.3, 0.3, 0.05, 5),
+      metalMaterial
+    );
+    wheelBase.position.y = 0.1;
+    chair.add(wheelBase);
+    
+    chair.position.set(3, 0, 1.5);
+    scene.add(chair);
 
-    controlDesk.position.set(3, 0, 0);
-    scene.add(controlDesk);
+    // Ceiling and walls
+    const ceiling = new THREE.Mesh(
+      new THREE.PlaneGeometry(15, 15),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9, side: THREE.DoubleSide })
+    );
+    ceiling.rotation.x = -Math.PI / 2;
+    ceiling.position.y = 4;
+    scene.add(ceiling);
+    
+    const studioFloor = new THREE.Mesh(
+      new THREE.PlaneGeometry(15, 15),
+      woodMaterial
+    );
+    studioFloor.rotation.x = -Math.PI / 2;
+    studioFloor.position.y = 0;
+    scene.add(studioFloor);
+    
+    // Recording light
+    const recordingLight = new THREE.Mesh(
+      new THREE.BoxGeometry(0.4, 0.15, 0.3),
+      new THREE.MeshStandardMaterial({
+        color: isRecording ? 0xff0000 : 0x00ff00,
+        emissive: isRecording ? 0xff0000 : 0x00ff00,
+        emissiveIntensity: isRecording ? 1 : 0.5
+      })
+    );
+    recordingLight.position.set(-3, 3.7, -1.5);
+    scene.add(recordingLight);
 
-    // Waveform displays on panels
-    const waveforms = [];
-    panelPositions.forEach((pos, panelIndex) => {
-      const waveformGroup = new THREE.Group();
-      for (let i = 0; i < 15; i++) {
-        const barGeometry = new THREE.BoxGeometry(0.04, 0.5, 0.02);
-        const bar = new THREE.Mesh(barGeometry, cyanGlowMaterial);
-        bar.position.x = (i - 7) * 0.08;
-        bar.position.y = 0;
-        waveformGroup.add(bar);
-      }
-      waveformGroup.position.set(pos.x + 3, pos.y, pos.z + 0.01);
-      scene.add(waveformGroup);
-      waveforms.push(waveformGroup);
-    });
-
-    // Save indicator - lime green pulse
-    const saveIndicatorGeometry = new THREE.RingGeometry(0.5, 0.7, 32);
-    const saveIndicator = new THREE.Mesh(saveIndicatorGeometry, limeGlowMaterial);
-    saveIndicator.position.set(3, 3.5, -0.8);
-    scene.add(saveIndicator);
-
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    // Realistic studio lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.SpotLight(0xffffff, 0.4);
-    keyLight.position.set(0, 8, 8);
-    keyLight.angle = Math.PI / 4;
-    keyLight.penumbra = 0.5;
-    scene.add(keyLight);
+    // Main ceiling lights
+    const ceilingLight1 = new THREE.SpotLight(0xffe8d6, 1.2, 20, Math.PI / 6, 0.3);
+    ceilingLight1.position.set(-3, 3.8, 0);
+    ceilingLight1.castShadow = true;
+    scene.add(ceilingLight1);
 
-    const boothLight = new THREE.PointLight(isRecording ? 0xff0000 : 0x00ffff, isRecording ? 1 : 0.5, 10);
-    boothLight.position.set(-3, 3, 0);
-    scene.add(boothLight);
+    const ceilingLight2 = new THREE.SpotLight(0xffe8d6, 1.2, 20, Math.PI / 6, 0.3);
+    ceilingLight2.position.set(3, 3.8, 0);
+    ceilingLight2.castShadow = true;
+    scene.add(ceilingLight2);
 
-    const controlLight = new THREE.PointLight(0xff0000, 0.6, 10);
-    controlLight.position.set(3, 3, 0);
-    scene.add(controlLight);
+    // Monitor backlights
+    const monitorLight = new THREE.PointLight(0x00aaff, 0.6, 5);
+    monitorLight.position.set(3, 1.6, -1);
+    scene.add(monitorLight);
 
-    const accentLight = new THREE.PointLight(0xff0000, 0.4, 20);
-    accentLight.position.set(0, 5, 5);
-    scene.add(accentLight);
+    // Recording indicator light
+    const recordLight = new THREE.PointLight(
+      isRecording ? 0xff0000 : 0x00ff00,
+      isRecording ? 0.8 : 0.3,
+      8
+    );
+    recordLight.position.set(-3, 3.5, -1.5);
+    scene.add(recordLight);
 
     // Volumetric fog lights
     const volumetricLights = [];
@@ -283,25 +499,12 @@ export default function RecordingStudio() {
       camera.position.y = 3 + Math.sin(time * 0.1) * 0.5;
       camera.lookAt(0, 2, 0);
 
-      // Waveform animations
-      waveforms.forEach((waveformGroup) => {
-        waveformGroup.children.forEach((bar, i) => {
-          if (isRecording) {
-            const wave = Math.sin(time * 4 + i * 0.5) * 0.5 + 0.5;
-            bar.scale.y = 0.5 + wave * 2;
-          } else {
-            bar.scale.y = 0.3;
-          }
-        });
-      });
+      // Mic stand subtle movement
+      micStand.rotation.y = Math.sin(time * 0.2) * 0.02;
 
-      // Mic subtle float
-      micGroup.position.y = Math.sin(time * 0.5) * 0.05;
-
-      // Control panels subtle rotation
-      controlPanels.forEach((panel, i) => {
-        panel.rotation.y = Math.sin(time * 0.3 + i) * 0.05;
-      });
+      // Recording light pulse
+      recordLight.intensity = isRecording ? (0.8 + Math.sin(time * 3) * 0.2) : 0.3;
+      recordingLight.material.emissiveIntensity = isRecording ? (1 + Math.sin(time * 3) * 0.2) : 0.5;
 
       // Save indicator pulse
       if (isSaving) {
