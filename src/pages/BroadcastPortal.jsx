@@ -9,6 +9,7 @@ import GammaEmbed from '@/components/media/GammaEmbed';
 import SocialEmbeds from '@/components/media/SocialEmbeds';
 import SpatialAudio from '@/components/audio/SpatialAudio';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
+import InscriptionExplainer from '@/components/education/InscriptionExplainer';
 import LiveChat from '@/components/chat/LiveChat';
 import DJRedFang from '@/components/dj/DJRedFang';
 

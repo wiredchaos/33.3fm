@@ -8,6 +8,7 @@ import LiveChat from '@/components/chat/LiveChat';
 import DJRedFang from '@/components/dj/DJRedFang';
 import MusicVisualizer from '@/components/audio/MusicVisualizer';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
+import InscriptionExplainer from '@/components/education/InscriptionExplainer';
 import WatermarkRemoval from '@/components/monetization/WatermarkRemoval';
 import Jukebox from '@/components/media/Jukebox';
 import ChangeMachine from '@/components/monetization/ChangeMachine';
