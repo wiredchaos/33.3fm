@@ -219,7 +219,7 @@ Check the 33.3FM playlist (https://open.spotify.com/playlist/2VwOYrB1C93gNIPiBZN
     return (
       <button
         onClick={() => setIsMinimized(false)}
-        className="fixed bottom-24 left-6 z-30 w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/50 hover:shadow-red-500/70 transition-all group"
+        className="fixed bottom-24 right-6 z-30 w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/50 hover:shadow-red-500/70 transition-all group animate-bounce"
       >
         <Mic2 className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
         <div className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
@@ -228,8 +228,8 @@ Check the 33.3FM playlist (https://open.spotify.com/playlist/2VwOYrB1C93gNIPiBZN
   }
 
   return (
-    <div className={`fixed bottom-24 left-6 z-30 pointer-events-auto transition-all duration-300 ${
-      isExpanded ? 'w-[500px]' : 'w-80'
+    <div className={`fixed bottom-24 right-6 z-30 pointer-events-auto transition-all duration-300 animate-in slide-in-from-bottom ${
+      isExpanded ? 'w-[420px]' : 'w-80'
     }`}>
       <div className="backdrop-blur-xl bg-gradient-to-br from-black/95 to-red-950/40 border-2 border-red-500/50 rounded-2xl shadow-2xl shadow-red-500/30 overflow-hidden">
         {/* Header */}

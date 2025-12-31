@@ -401,8 +401,8 @@ export default function ArtistProfile() {
               ))}
             </div>
 
-            {/* Fan Interactions */}
-            <div className="mb-6">
+            {/* Fan Interactions - Optimized Layout */}
+            <div className="mb-6 mx-auto" style={{ maxWidth: '28rem' }}>
               <FanInteractions 
                 artistEmail={user?.email || 'artist@example.com'}
                 artistName={user?.imported_name || user?.full_name || 'Artist'}

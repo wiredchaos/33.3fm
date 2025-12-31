@@ -218,8 +218,8 @@ export default function BroadcastPortal() {
           </div>
         </div>
 
-        <div className="absolute top-24 right-6 pointer-events-auto">
-          <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3">
+        <div className="absolute top-24 right-6 pointer-events-auto animate-in slide-in-from-right duration-300">
+          <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 space-y-3 max-w-xs">
             <button onClick={() => { setMediaType('upload'); setShowMediaPanel(true); }} className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors text-white">
               <Upload className="w-4 h-4 text-cyan-400" />
               <span className="text-sm">Upload</span>
@@ -240,7 +240,7 @@ export default function BroadcastPortal() {
         </div>
 
         {showMediaPanel && (
-          <div className="absolute top-24 left-6 pointer-events-auto max-w-2xl w-full">
+          <div className="absolute top-24 left-6 pointer-events-auto max-w-md w-full animate-in slide-in-from-left duration-300">
             <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-light text-white tracking-wide">{mediaType === 'upload' && 'Upload Media'}{mediaType === 'video' && 'Video Embed'}{mediaType === 'gamma' && 'Gamma Presentation'}{mediaType === 'spotify' && 'Music Embed'}</h3>

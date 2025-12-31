@@ -7,6 +7,8 @@ import ArtistAnalytics from '@/components/analytics/ArtistAnalytics';
 import CommunityEvents from '@/components/events/CommunityEvents';
 import MusicDiscovery from '@/components/ai/MusicDiscovery';
 import BlockchainManagement from '@/components/blockchain/BlockchainManagement';
+import ArtistSupport from '@/components/ai/ArtistSupport';
+import NFTMinting from '@/components/blockchain/NFTMinting';
 
 export default function ArtistDashboard() {
   const [user, setUser] = useState(null);
@@ -46,10 +48,15 @@ export default function ArtistDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8 animate-in fade-in duration-500">
         <ArtistAnalytics artistEmail={user.email} />
         
-        <BlockchainManagement artistEmail={user.email} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <BlockchainManagement artistEmail={user.email} />
+          <NFTMinting artistEmail={user.email} />
+        </div>
+
+        <ArtistSupport artistEmail={user.email} />
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <CommunityEvents artistEmail={user.email} isOwner={true} />

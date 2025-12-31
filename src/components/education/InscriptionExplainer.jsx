@@ -9,7 +9,7 @@ export default function InscriptionExplainer() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-6 z-30 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg hover:shadow-purple-500/50 transition-all group"
+        className="fixed top-24 right-6 z-30 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg hover:shadow-purple-500/50 transition-all group animate-pulse"
       >
         <Info className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
       </button>

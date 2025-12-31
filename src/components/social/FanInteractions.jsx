@@ -72,9 +72,9 @@ export default function FanInteractions({ artistEmail, artistName }) {
   };
 
   return (
-    <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6">
+    <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6 max-w-md animate-in fade-in slide-in-from-bottom duration-300">
       <div className="flex items-center gap-3 mb-6">
-        <MessageCircle className="w-5 h-5 text-cyan-400" />
+        <MessageCircle className="w-5 h-5 text-cyan-400 animate-pulse" />
         <h3 className="text-lg font-light text-white tracking-wide">Fan Wall</h3>
       </div>
 
