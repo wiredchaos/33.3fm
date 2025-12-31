@@ -104,6 +104,13 @@ export default function Home() {
       tier: 'FREE'
     },
     {
+      name: 'Artist Dashboard',
+      description: 'Analytics & management',
+      icon: TrendingUp,
+      path: 'ArtistDashboard',
+      tier: 'FREE'
+    },
+    {
       name: 'Podcast Booth',
       description: 'Voice-first broadcast environment',
       icon: Mic,

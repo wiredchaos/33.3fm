@@ -4,8 +4,9 @@ import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, TrendingUp, Radio, Music, Users, Bell, BellOff, ArrowLeft, Filter } from 'lucide-react';
+import { Search, TrendingUp, Radio, Music, Users, Bell, BellOff, ArrowLeft, Filter, Sparkles } from 'lucide-react';
 import FollowButton from '@/components/social/FollowButton';
+import MusicDiscovery from '@/components/ai/MusicDiscovery';
 
 export default function Discover() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,6 +113,13 @@ export default function Discover() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* AI Music Discovery */}
+        {filter === 'all' && (
+          <section className="mb-12">
+            <MusicDiscovery />
+          </section>
+        )}
+
         {/* Live Streams */}
         {(filter === 'all' || filter === 'live') && (
           <section className="mb-12">
