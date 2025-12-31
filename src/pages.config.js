@@ -8,6 +8,7 @@ import PodcastBooth from './pages/PodcastBooth';
 import RecordingStudio from './pages/RecordingStudio';
 import Store from './pages/Store';
 import Subscription from './pages/Subscription';
+import FreeTier from './pages/FreeTier';
 
 
 export const PAGES = {
@@ -21,6 +22,7 @@ export const PAGES = {
     "RecordingStudio": RecordingStudio,
     "Store": Store,
     "Subscription": Subscription,
+    "FreeTier": FreeTier,
 }
 
 export const pagesConfig = {

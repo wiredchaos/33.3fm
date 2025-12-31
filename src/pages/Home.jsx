@@ -188,7 +188,14 @@ export default function Home() {
           </div>
 
           {/* Monetization Quick Links */}
-          <div className="mt-4 flex gap-3">
+          <div className="mt-4 flex gap-3 flex-wrap justify-center">
+            <Link
+              to={createPageUrl('FreeTier')}
+              className="px-4 py-2 bg-white/5 border border-cyan-400/30 text-cyan-400 rounded-full text-sm flex items-center gap-2 hover:bg-cyan-400/10 transition-all"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Free Tier
+            </Link>
             <Link
               to={createPageUrl('Subscription')}
               className="px-4 py-2 bg-white/5 border border-red-500/30 text-red-400 rounded-full text-sm flex items-center gap-2 hover:bg-red-500/10 transition-all"
@@ -198,14 +205,14 @@ export default function Home() {
             </Link>
             <Link
               to={createPageUrl('Store')}
-              className="px-4 py-2 bg-white/5 border border-cyan-400/30 text-cyan-400 rounded-full text-sm flex items-center gap-2 hover:bg-cyan-400/10 transition-all"
+              className="px-4 py-2 bg-white/5 border border-purple-400/30 text-purple-400 rounded-full text-sm flex items-center gap-2 hover:bg-purple-400/10 transition-all"
             >
               <ShoppingBag className="w-4 h-4" />
               Store
             </Link>
             <button
               onClick={() => setShowSocialAuth(true)}
-              className="px-4 py-2 bg-white/5 border border-purple-400/30 text-purple-400 rounded-full text-sm flex items-center gap-2 hover:bg-purple-400/10 transition-all"
+              className="px-4 py-2 bg-white/5 border border-white/20 text-white rounded-full text-sm flex items-center gap-2 hover:bg-white/10 transition-all"
             >
               <User className="w-4 h-4" />
               Connect
