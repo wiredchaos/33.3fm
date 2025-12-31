@@ -90,8 +90,27 @@ export default function VirtualStore() {
             </div>
 
             {/* Item Preview */}
-            <div className="w-full aspect-square rounded-xl bg-black/40 mb-4 flex items-center justify-center">
-              <Sparkles className="w-12 h-12 text-cyan-400" />
+            <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-black/60 to-black/40 mb-4 flex items-center justify-center relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {item.model_data?.type === 'overlay' && (
+                <div className="relative z-10">
+                  <Sparkles className="w-16 h-16 text-cyan-400 animate-pulse" />
+                  {item.model_data.animated && (
+                    <div className="absolute -inset-4 border-2 border-cyan-400/30 rounded-full animate-ping" />
+                  )}
+                </div>
+              )}
+              {item.model_data?.type === '3d_model' && (
+                <div className="text-6xl">🎵</div>
+              )}
+              {!item.model_data?.type && (
+                <Sparkles className="w-12 h-12 text-cyan-400" />
+              )}
+              <div className="absolute bottom-2 right-2 px-2 py-1 rounded-full bg-black/60 text-xs text-cyan-400">
+                {item.category === 'visual_effect' ? '🎨 Overlay' : 
+                 item.category === 'equipment' ? '🎧 Equipment' : 
+                 '✨ Decor'}
+              </div>
             </div>
 
             {/* Item Info */}
