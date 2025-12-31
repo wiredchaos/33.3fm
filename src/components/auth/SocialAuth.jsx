@@ -6,31 +6,20 @@ import { base44 } from '@/api/base44Client';
 export default function SocialAuth({ onSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
+  const [showWarning, setShowWarning] = useState(true);
 
   const handleSocialLogin = async (provider) => {
+    // DEMO ALERT: Explain OAuth limitation
+    alert(`⚠️ DEMO MODE\n\nSocial OAuth requires backend OAuth credentials to be configured.\n\nThis is a prototype showing the UI flow. For production:\n1. Configure OAuth apps on ${provider}\n2. Add credentials to backend\n3. Implement secure token exchange\n\nFor now, we'll simulate a successful connection.`);
+    
     setIsLoading(true);
     try {
-      // OAuth flow - open popup window
-      const width = 600;
-      const height = 700;
-      const left = window.screen.width / 2 - width / 2;
-      const top = window.screen.height / 2 - height / 2;
-      
-      // Simulate OAuth popup (in production, this would redirect to provider OAuth)
-      const popup = window.open(
-        `https://oauth-provider.com/${provider}/authorize`,
-        'OAuth',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-
-      // Simulate OAuth response with profile data
+      // Simulate OAuth response with demo profile data
       setTimeout(async () => {
-        popup?.close();
-        
         const mockProfileData = {
-          twitter: { name: 'Artist Name', username: '@artistname', bio: 'Electronic Music Producer', followers: 12500, avatar: 'https://i.pravatar.cc/150?img=33' },
-          github: { name: 'Developer Name', username: 'devname', bio: 'Full Stack Developer', repos: 87, avatar: 'https://i.pravatar.cc/150?img=12' },
-          google: { name: 'User Name', email: 'user@gmail.com', avatar: 'https://i.pravatar.cc/150?img=68' }
+          twitter: { name: 'Demo Artist', username: '@demo_artist', bio: 'Electronic Music Producer', followers: 12500, avatar: 'https://i.pravatar.cc/150?img=33' },
+          github: { name: 'Demo Developer', username: 'demo_dev', bio: 'Full Stack Developer', repos: 87, avatar: 'https://i.pravatar.cc/150?img=12' },
+          google: { name: 'Demo User', email: 'demo@gmail.com', avatar: 'https://i.pravatar.cc/150?img=68' }
         };
 
         const profileData = mockProfileData[provider] || {};
@@ -45,11 +34,11 @@ export default function SocialAuth({ onSuccess }) {
         });
         
         if (onSuccess) onSuccess(profileData);
-      }, 2000);
+        setIsLoading(false);
+      }, 1000);
       
     } catch (error) {
       console.error('Social login failed:', error);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -107,6 +96,23 @@ export default function SocialAuth({ onSuccess }) {
 
   return (
     <div className="backdrop-blur-xl bg-black/80 border border-cyan-400/30 rounded-2xl p-6 w-full max-w-md">
+      {/* Demo Warning Banner */}
+      {showWarning && (
+        <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 animate-in fade-in duration-300">
+          <div className="flex items-start gap-2">
+            <div className="text-xs text-yellow-400 flex-1">
+              <strong>⚠️ PROTOTYPE:</strong> OAuth requires backend credentials. This demo shows UI flow only.
+            </div>
+            <button 
+              onClick={() => setShowWarning(false)}
+              className="text-yellow-400 hover:text-yellow-300 font-bold"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       <h2 className="text-2xl font-light text-white mb-6 text-center">
         Connect Your Profile
       </h2>
@@ -167,8 +173,13 @@ export default function SocialAuth({ onSuccess }) {
         )}
       </div>
 
-      <div className="mt-6 text-xs text-white/40 text-center">
-        Read-only access • No transactions required
+      <div className="mt-6 space-y-2">
+        <div className="text-xs text-center text-white/40">
+          Read-only access • No transactions required
+        </div>
+        <div className="text-xs text-center text-cyan-400/60 bg-cyan-400/5 rounded p-2">
+          💡 To enable: Configure OAuth apps & add backend credentials
+        </div>
       </div>
     </div>
   );
