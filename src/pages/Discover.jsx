@@ -5,11 +5,11 @@ import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, TrendingUp, Radio, Music, Users, Bell, BellOff, ArrowLeft, Filter } from 'lucide-react';
+import FollowButton from '@/components/social/FollowButton';
 
 export default function Discover() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
-  const [following, setFollowing] = useState([]);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -20,43 +20,16 @@ export default function Discover() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      setFollowing(currentUser.following || []);
     } catch (error) {
-      console.error('User not logged in');
-    }
-  };
-
-  const toggleFollow = async (artistId) => {
-    const newFollowing = following.includes(artistId)
-      ? following.filter(id => id !== artistId)
-      : [...following, artistId];
-    
-    setFollowing(newFollowing);
-    
-    if (user) {
-      try {
-        await base44.auth.updateMe({ following: newFollowing });
-        
-        // Create notification for artist
-        if (newFollowing.includes(artistId)) {
-          await base44.integrations.Core.SendEmail({
-            to: `artist${artistId}@33.3fm.example`,
-            subject: 'New Follower on 33.3FM',
-            body: `${user.full_name || user.email} started following you on 33.3FM DOGECHAIN!`
-          });
-        }
-      } catch (error) {
-        console.error('Follow failed:', error);
-        setFollowing(following); // Revert on error
-      }
+      console.log('User not logged in');
     }
   };
 
   const trendingArtists = [
-    { id: 1, name: 'DJ Red Fang', genre: 'Electronic', listeners: '12.3K', isLive: true },
-    { id: 2, name: 'Neon Pulse', genre: 'Synthwave', listeners: '8.7K', isLive: false },
-    { id: 3, name: 'Echo Chamber', genre: 'Ambient', listeners: '6.2K', isLive: true },
-    { id: 4, name: 'Bass Theory', genre: 'Drum & Bass', listeners: '5.1K', isLive: false }
+    { id: 1, name: 'DJ Red Fang', genre: 'Electronic', listeners: '12.3K', isLive: true, email: 'redfang@33.3fm.example' },
+    { id: 2, name: 'Neon Pulse', genre: 'Synthwave', listeners: '8.7K', isLive: false, email: 'neonpulse@33.3fm.example' },
+    { id: 3, name: 'Echo Chamber', genre: 'Ambient', listeners: '6.2K', isLive: true, email: 'echo@33.3fm.example' },
+    { id: 4, name: 'Bass Theory', genre: 'Drum & Bass', listeners: '5.1K', isLive: false, email: 'bass@33.3fm.example' }
   ];
 
   const newReleases = [
@@ -205,20 +178,13 @@ export default function Discover() {
                   <p className="text-xs text-white/60 mb-3">{artist.genre}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-white/40">{artist.listeners} listeners</span>
-                    <button
-                      onClick={() => toggleFollow(artist.id)}
-                      className={`p-2 rounded-lg transition-all ${
-                        following.includes(artist.id)
-                          ? 'bg-cyan-400 text-black'
-                          : 'bg-white/5 text-white/60 hover:bg-white/10'
-                      }`}
-                    >
-                      {following.includes(artist.id) ? (
-                        <Bell className="w-4 h-4" />
-                      ) : (
-                        <BellOff className="w-4 h-4" />
-                      )}
-                    </button>
+                  </div>
+                  <div className="mt-3">
+                    <FollowButton 
+                      artistEmail={artist.email}
+                      artistName={artist.name}
+                      size="small"
+                    />
                   </div>
                 </div>
               ))}

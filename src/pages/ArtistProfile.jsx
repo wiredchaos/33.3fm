@@ -350,6 +350,14 @@ export default function ArtistProfile() {
               </div>
             </div>
 
+            {/* Follow Button */}
+            <div className="mb-6 flex justify-center">
+              <FollowButton 
+                artistEmail={user?.email || 'artist@example.com'} 
+                artistName={user?.imported_name || user?.full_name || 'Artist'} 
+              />
+            </div>
+
             {/* Links */}
             <div className="space-y-3 mb-6">
               {links.map((link, i) => (
@@ -364,6 +372,14 @@ export default function ArtistProfile() {
                   </div>
                 </a>
               ))}
+            </div>
+
+            {/* Fan Interactions */}
+            <div className="mb-6">
+              <FanInteractions 
+                artistEmail={user?.email || 'artist@example.com'}
+                artistName={user?.imported_name || user?.full_name || 'Artist'}
+              />
             </div>
 
             {/* Upgrade CTA */}
