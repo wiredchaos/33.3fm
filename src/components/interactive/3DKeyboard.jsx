@@ -34,9 +34,11 @@ export default function ThreeDKeyboard({ onNotePlay }) {
       const key = new THREE.Mesh(
         new THREE.BoxGeometry(isBlack ? 0.4 : 0.6, 0.1, isBlack ? 1.5 : 2.5),
         new THREE.MeshStandardMaterial({
-          color: isBlack ? 0x000000 : 0xffffff,
-          metalness: 0.3,
-          roughness: 0.7
+          color: isBlack ? 0x1a1a1a : 0xffffff,
+          emissive: isBlack ? 0x00ffff : 0x00ffff,
+          emissiveIntensity: 0.3,
+          metalness: 0.8,
+          roughness: 0.2
         })
       );
 
@@ -51,12 +53,16 @@ export default function ThreeDKeyboard({ onNotePlay }) {
     scene.add(keyboardGroup);
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.PointLight(0x00ffff, 1, 20);
+    const keyLight = new THREE.PointLight(0x00ffff, 2, 20);
     keyLight.position.set(0, 5, 3);
     scene.add(keyLight);
+
+    const rimLight = new THREE.PointLight(0xff00ff, 1.5, 15);
+    rimLight.position.set(-5, 3, 5);
+    scene.add(rimLight);
 
     // Raycaster for interaction
     const raycaster = new THREE.Raycaster();
@@ -91,13 +97,13 @@ export default function ThreeDKeyboard({ onNotePlay }) {
 
       keys.forEach(key => {
         const isBlack = key.userData.note.includes('#');
-        key.material.emissive.setHex(0x000000);
-        key.material.color.setHex(isBlack ? 0x000000 : 0xffffff);
+        key.material.emissiveIntensity = 0.3;
+        key.material.color.setHex(isBlack ? 0x1a1a1a : 0xffffff);
       });
 
       if (intersects.length > 0) {
         const key = intersects[0].object;
-        key.material.emissive.setHex(0x00ffff);
+        key.material.emissiveIntensity = 1.0;
         renderer.domElement.style.cursor = 'pointer';
       } else {
         renderer.domElement.style.cursor = 'default';
