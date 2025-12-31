@@ -20,8 +20,7 @@ export default function ThreeDDrumKit({ onDrumHit }) {
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);
 
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-
+    // Audio disabled for touchscreen demo
     const drumKit = new THREE.Group();
     const drums = [];
 
@@ -141,21 +140,7 @@ export default function ThreeDDrumKit({ onDrumHit }) {
     const mouse = new THREE.Vector2();
 
     const playDrum = (frequency, name) => {
-      const oscillator = audioContextRef.current.createOscillator();
-      const gainNode = audioContextRef.current.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
-      
-      oscillator.frequency.value = frequency;
-      oscillator.type = name === 'Hi-Hat' || name === 'Crash' ? 'square' : 'sine';
-      
-      gainNode.gain.setValueAtTime(0.5, audioContextRef.current.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 0.3);
-      
-      oscillator.start();
-      oscillator.stop(audioContextRef.current.currentTime + 0.3);
-
+      // Audio disabled for touchscreen
       setLastHit(name);
       setTimeout(() => setLastHit(null), 200);
       

@@ -6,27 +6,11 @@ import { Button } from '@/components/ui/button';
 
 export default function ThreeDOrchestra({ isPremium = false }) {
   const mountRef = useRef(null);
-  const [isLocked, setIsLocked] = useState(!isPremium);
+  const [isLocked, setIsLocked] = useState(false); // Demo mode - always unlocked
   const [chaosBalance, setChaosBalance] = useState(0);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const audioContextRef = useRef(null);
-  const unlockCost = 500; // 500 CHAOS XP per use
-
-  useEffect(() => {
-    loadBalance();
-  }, []);
-
-  const loadBalance = async () => {
-    try {
-      const user = await base44.auth.me();
-      const accounts = await base44.entities.ChaosXP.filter({ user_email: user.email });
-      if (accounts.length > 0) {
-        setChaosBalance(accounts[0].balance);
-      }
-    } catch (error) {
-      console.error('Failed to load balance:', error);
-    }
-  };
+  const unlockCost = 500;
 
   const unlockOrchestra = async () => {
     if (chaosBalance < unlockCost) return;
@@ -71,8 +55,7 @@ export default function ThreeDOrchestra({ isPremium = false }) {
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);
 
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-
+    // Audio disabled for touchscreen demo
     const orchestra = new THREE.Group();
     const instruments = [];
 
@@ -149,20 +132,7 @@ export default function ThreeDOrchestra({ isPremium = false }) {
     const mouse = new THREE.Vector2();
 
     const playInstrument = (frequency, name) => {
-      const oscillator = audioContextRef.current.createOscillator();
-      const gainNode = audioContextRef.current.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
-      
-      oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 1);
-      
-      oscillator.start();
-      oscillator.stop(audioContextRef.current.currentTime + 1);
+      // Audio disabled for touchscreen
     };
 
     const onMouseMove = (event) => {

@@ -20,9 +20,7 @@ export default function ThreeDKeyboard({ onNotePlay }) {
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);
 
-    // Audio context
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-
+    // Audio disabled for touchscreen demo
     // Keyboard
     const keyboardGroup = new THREE.Group();
     const keys = [];
@@ -69,21 +67,7 @@ export default function ThreeDKeyboard({ onNotePlay }) {
     const mouse = new THREE.Vector2();
 
     const playNote = (frequency, note) => {
-      const oscillator = audioContextRef.current.createOscillator();
-      const gainNode = audioContextRef.current.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
-      
-      oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 0.5);
-      
-      oscillator.start();
-      oscillator.stop(audioContextRef.current.currentTime + 0.5);
-
+      // Audio disabled for touchscreen
       if (onNotePlay) onNotePlay(note);
     };
 

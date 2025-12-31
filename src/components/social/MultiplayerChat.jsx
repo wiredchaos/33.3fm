@@ -100,7 +100,7 @@ export default function MultiplayerChat({ room = 'studio' }) {
       </div>
 
       {/* Messages */}
-      <div className="h-80 overflow-y-auto p-4 space-y-3">
+      <div className="h-64 overflow-y-auto p-4 space-y-3">
         {messages.map((msg) => (
           <div key={msg.id} className="group">
             <div className={`flex flex-col ${msg.isHost ? 'items-start' : 'items-start'}`}>
