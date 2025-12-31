@@ -10,9 +10,6 @@ import DJRedFang from '@/components/dj/DJRedFang';
 import ThreeDMicrophone from '@/components/interactive/3DMicrophone';
 import ThreeDDrumKit from '@/components/interactive/3DDrumKit';
 import ThreeDOrchestra from '@/components/interactive/3DOrchestra';
-import ThreeDMicrophone from '@/components/interactive/3DMicrophone';
-import ThreeDDrumKit from '@/components/interactive/3DDrumKit';
-import ThreeDOrchestra from '@/components/interactive/3DOrchestra';
 
 export default function PerformanceStage() {
   const canvasRef = useRef(null);
@@ -21,7 +18,6 @@ export default function PerformanceStage() {
   const [audienceCount, setAudienceCount] = useState(47);
   const [isRecording, setIsRecording] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
