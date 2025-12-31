@@ -51,9 +51,8 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
   const generateTrackSuggestions = async () => {
     setIsTyping(true);
     try {
-      // Pull real songs from 33.3FM Spotify playlist
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are DJ Red Fang at 33.3FM. Pull 3 real track suggestions from the official 33.3FM Spotify playlist (https://open.spotify.com/playlist/2VwOYrB1C93gNIPiBZNxhH). Current genre: ${currentGenre}. Chat vibe: ${chatSentiment}. Return ONLY real tracks that exist in that playlist. Format: JSON array with "artist" and "track" fields.`,
+        prompt: `You are DJ Red Fang at 33.3FM. Pull 3 real track suggestions from the official 33.3FM Spotify playlist (https://open.spotify.com/playlist/2VwOYrB1C93gNIPiBZNxhH). Current genre: ${currentGenre}. Chat vibe: ${chatSentiment}. Return ONLY real tracks that exist in that playlist.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
