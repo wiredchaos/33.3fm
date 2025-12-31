@@ -224,9 +224,9 @@ export default function PerformanceStage() {
         </div>
 
         {/* Right Side - Chat & Orchestra */}
-        <div className="absolute top-24 right-6 w-[500px] pointer-events-auto space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="absolute top-24 right-6 w-80 pointer-events-auto space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           <MultiplayerChat room="performance" />
-          <ThreeDOrchestra isPremium={false} />
+          <ThreeDOrchestra isPremium={true} />
         </div>
 
         {/* DJ Red Fang */}

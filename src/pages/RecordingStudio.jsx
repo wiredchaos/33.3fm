@@ -771,7 +771,7 @@ export default function RecordingStudio() {
         </div>
 
         {/* Social Features */}
-        <div className="fixed top-24 right-6 z-30 w-96 pointer-events-auto space-y-4">
+        <div className="fixed top-24 right-6 z-30 w-80 pointer-events-auto">
           <MultiplayerChat room="studio" />
         </div>
 
