@@ -5,6 +5,8 @@ import { base44 } from '@/api/base44Client';
 import * as THREE from 'three';
 import { ArrowLeft, User, ArrowUpRight, Plus } from 'lucide-react';
 import SocialAuth from '@/components/auth/SocialAuth';
+import FollowButton from '@/components/social/FollowButton';
+import FanInteractions from '@/components/social/FanInteractions';
 
 export default function ArtistProfile() {
   const canvasRef = useRef(null);
