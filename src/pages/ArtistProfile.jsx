@@ -271,8 +271,8 @@ export default function ArtistProfile() {
         </div>
 
         {/* Central Content */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-          <div className="text-center max-w-md">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto px-4">
+          <div className="text-center max-w-md w-full">
             {/* Artist Info */}
             <div className="mb-8">
               <div className="w-32 h-32 mx-auto mb-4" />
@@ -301,16 +301,16 @@ export default function ArtistProfile() {
             </div>
 
             {/* Upgrade CTA */}
-            <div className="backdrop-blur-md bg-gradient-to-br from-cyan-400/10 to-transparent border border-cyan-400/30 rounded-2xl p-6">
-              <h3 className="text-lg font-light text-white mb-2">
+            <div className="backdrop-blur-md bg-gradient-to-br from-cyan-400/10 to-transparent border border-cyan-400/30 rounded-2xl p-4">
+              <h3 className="text-base font-light text-white mb-1">
                 Upgrade to Broadcast Portal
               </h3>
-              <p className="text-sm text-white/60 mb-4">
-                Launch your own radio station with live streaming, scheduling, and full creative control
+              <p className="text-xs text-white/60 mb-3">
+                Launch your own radio station with live streaming
               </p>
               <Link
                 to={createPageUrl('BroadcastPortal')}
-                className="inline-block px-6 py-2 bg-cyan-400 text-black rounded-full text-sm uppercase tracking-wider hover:bg-cyan-300 transition-colors"
+                className="inline-block px-4 py-1.5 bg-cyan-400 text-black rounded-full text-xs uppercase tracking-wider hover:bg-cyan-300 transition-colors"
               >
                 Upgrade Now
               </Link>
