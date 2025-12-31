@@ -29,6 +29,9 @@ export default function RecordingStudio() {
   const [hasWatermarkRemoval, setHasWatermarkRemoval] = useState(false);
   const [isVocalRecording, setIsVocalRecording] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
+  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+  const [bottomPanelCollapsed, setBottomPanelCollapsed] = useState(false);
 
   useEffect(() => {
     const checkWatermark = async () => {
@@ -790,69 +793,122 @@ export default function RecordingStudio() {
         {/* DJ Red Fang */}
         <DJRedFang context={isRecording ? 'recording' : 'greeting'} currentGenre="electronic" chatSentiment="focused" />
 
-        {/* Left Column - Studio Controls */}
-        <div className="absolute top-24 left-6 pointer-events-auto space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-          <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 w-80">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm uppercase tracking-wider text-white/60">33.3FM LIVE</h3>
-              <Music className="w-4 h-4 text-red-400 animate-pulse" />
+        {/* Left Column - Studio Controls - Collapsible */}
+        {!leftPanelCollapsed ? (
+          <div className="absolute top-24 left-6 pointer-events-auto space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <button
+              onClick={() => setLeftPanelCollapsed(true)}
+              className="absolute -right-3 top-0 w-6 h-6 rounded-full bg-cyan-400/20 border border-cyan-400/30 flex items-center justify-center hover:bg-cyan-400/30 transition-all z-10"
+              title="Collapse Panel"
+            >
+              <ArrowLeft className="w-3 h-3 text-cyan-400" />
+            </button>
+            <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 w-80">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm uppercase tracking-wider text-white/60">33.3FM LIVE</h3>
+                <Music className="w-4 h-4 text-red-400 animate-pulse" />
+              </div>
+              <iframe 
+                style={{borderRadius: '12px'}}
+                src="https://open.spotify.com/embed/playlist/2VwOYrB1C93gNIPiBZNxhH?utm_source=generator&theme=0"
+                width="100%" 
+                height="152" 
+                frameBorder="0" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+              />
             </div>
-            <iframe 
-              style={{borderRadius: '12px'}}
-              src="https://open.spotify.com/embed/playlist/2VwOYrB1C93gNIPiBZNxhH?utm_source=generator&theme=0"
-              width="100%" 
-              height="152" 
-              frameBorder="0" 
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-              loading="lazy"
+            <ThreeDKeyboard onNotePlay={(note) => console.log('Note played:', note)} />
+            <ThreeDMicrophone 
+              onRecord={() => setIsVocalRecording(!isVocalRecording)} 
+              isRecording={isVocalRecording} 
             />
+            <ThreeDDrumKit onDrumHit={(drum) => console.log('Drum hit:', drum)} />
+            <ThreeDSynthesizer onPlay={(note) => console.log('Synth played:', note)} />
+            <ThreeDOrchestra isPremium={isPremium} />
           </div>
-          <ThreeDKeyboard onNotePlay={(note) => console.log('Note played:', note)} />
-          <ThreeDMicrophone 
-            onRecord={() => setIsVocalRecording(!isVocalRecording)} 
-            isRecording={isVocalRecording} 
-          />
-          <ThreeDDrumKit onDrumHit={(drum) => console.log('Drum hit:', drum)} />
-          <ThreeDSynthesizer onPlay={(note) => console.log('Synth played:', note)} />
-          <ThreeDOrchestra isPremium={isPremium} />
-        </div>
+        ) : (
+          <button
+            onClick={() => setLeftPanelCollapsed(false)}
+            className="absolute top-24 left-6 pointer-events-auto w-10 h-10 rounded-full bg-cyan-400/20 border border-cyan-400/30 flex items-center justify-center hover:bg-cyan-400/30 transition-all"
+            title="Expand Panel"
+          >
+            <Music className="w-5 h-5 text-cyan-400" />
+          </button>
+        )}
 
-        {/* Social Features */}
-        <div className="fixed top-24 right-6 z-30 w-80 pointer-events-auto">
-          <MultiplayerChat room="studio" />
-        </div>
+        {/* Social Features - Collapsible */}
+        {!rightPanelCollapsed ? (
+          <div className="fixed top-24 right-6 z-30 w-80 pointer-events-auto">
+            <button
+              onClick={() => setRightPanelCollapsed(true)}
+              className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-purple-400/20 border border-purple-400/30 flex items-center justify-center hover:bg-purple-400/30 transition-all z-10"
+              title="Collapse Panel"
+            >
+              <ArrowLeft className="w-3 h-3 text-purple-400 rotate-180" />
+            </button>
+            <MultiplayerChat room="studio" />
+          </div>
+        ) : (
+          <button
+            onClick={() => setRightPanelCollapsed(false)}
+            className="fixed top-24 right-6 z-30 pointer-events-auto w-10 h-10 rounded-full bg-purple-400/20 border border-purple-400/30 flex items-center justify-center hover:bg-purple-400/30 transition-all"
+            title="Expand Panel"
+          >
+            <Music className="w-5 h-5 text-purple-400" />
+          </button>
+        )}
 
-        {/* Jukebox */}
-        <div className="fixed bottom-24 right-6 z-30 w-96 pointer-events-auto">
-          <Jukebox isLive={isRecording} />
-        </div>
+        {/* Jukebox - Collapsible */}
+        {!bottomPanelCollapsed ? (
+          <div className="fixed bottom-0 right-6 z-30 w-96 pointer-events-auto mb-4">
+            <button
+              onClick={() => setBottomPanelCollapsed(true)}
+              className="absolute -left-3 -top-3 w-6 h-6 rounded-full bg-red-400/20 border border-red-400/30 flex items-center justify-center hover:bg-red-400/30 transition-all z-10"
+              title="Collapse Panel"
+            >
+              <ArrowLeft className="w-3 h-3 text-red-400 rotate-90" />
+            </button>
+            <Jukebox isLive={isRecording} />
+          </div>
+        ) : (
+          <button
+            onClick={() => setBottomPanelCollapsed(false)}
+            className="fixed bottom-6 right-6 z-30 pointer-events-auto w-10 h-10 rounded-full bg-red-400/20 border border-red-400/30 flex items-center justify-center hover:bg-red-400/30 transition-all"
+            title="Expand Panel"
+          >
+            <Music className="w-5 h-5 text-red-400" />
+          </button>
+        )}
 
-        {/* Environment Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <Music className="w-6 h-6 text-cyan-400" />
-              <h2 className="text-2xl font-light text-white tracking-wide">
-                Recording Studio
-              </h2>
-            </div>
-            <p className="text-sm text-white/60 leading-relaxed max-w-2xl">
-              Artist-owned recording studio for music creation, demos, and production sessions.
-              Lime green pulse indicates when audio is inscribed and permanently saved.
-            </p>
-            <div className="mt-4 flex gap-2 text-xs uppercase tracking-wider">
-              <span className="px-3 py-1 rounded-full bg-cyan-400/20 text-cyan-400">
-                Music Creation
-              </span>
-              <span className="px-3 py-1 rounded-full bg-lime-500/20 text-lime-400">
-                Permanent Storage
-              </span>
-              <span className="px-3 py-1 rounded-full bg-white/10 text-white/60">
-                CRAB Core
-              </span>
+        {/* Environment Info - Collapsible */}
+        {!bottomPanelCollapsed && (
+          <div className="absolute bottom-0 left-0 right-0 p-6">
+            <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <Music className="w-6 h-6 text-cyan-400" />
+                <h2 className="text-2xl font-light text-white tracking-wide">
+                  Recording Studio
+                </h2>
+              </div>
+              <p className="text-sm text-white/60 leading-relaxed max-w-2xl">
+                Artist-owned recording studio for music creation, demos, and production sessions.
+                Lime green pulse indicates when audio is inscribed and permanently saved.
+              </p>
+              <div className="mt-4 flex gap-2 text-xs uppercase tracking-wider">
+                <span className="px-3 py-1 rounded-full bg-cyan-400/20 text-cyan-400">
+                  Music Creation
+                </span>
+                <span className="px-3 py-1 rounded-full bg-lime-500/20 text-lime-400">
+                  Permanent Storage
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white/10 text-white/60">
+                  CRAB Core
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* 3D Elevator Navigation */}
