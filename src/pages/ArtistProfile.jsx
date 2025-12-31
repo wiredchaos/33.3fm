@@ -9,6 +9,7 @@ import FollowButton from '@/components/social/FollowButton';
 import FanInteractions from '@/components/social/FanInteractions';
 import PhygitalManager from '@/components/phygital/PhygitalManager';
 import VirtualTryOn from '@/components/phygital/VirtualTryOn';
+import ThreeDLoader from '@/components/loading/ThreeDLoader';
 
 export default function ArtistProfile() {
   const canvasRef = useRef(null);
@@ -17,6 +18,9 @@ export default function ArtistProfile() {
   const [showPhygital, setShowPhygital] = useState(false);
   const [showTryOn, setShowTryOn] = useState(false);
   const [phygitalItems, setPhygitalItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingStage, setLoadingStage] = useState('initializing');
 
   useEffect(() => {
     loadUser();
@@ -47,6 +51,9 @@ export default function ArtistProfile() {
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    setLoadingStage('loading_scene');
+    setLoadingProgress(10);
+
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
     scene.fog = new THREE.Fog(0x000000, 8, 25);
@@ -56,13 +63,17 @@ export default function ArtistProfile() {
 
     const renderer = new THREE.WebGLRenderer({ 
       canvas: canvasRef.current, 
-      antialias: true,
-      alpha: true 
+      antialias: window.devicePixelRatio < 2,
+      alpha: true,
+      powerPreference: 'high-performance'
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    setLoadingProgress(30);
+    setLoadingStage('loading_assets');
 
     // Premium Materials
     const glassMaterial = new THREE.MeshPhysicalMaterial({
@@ -264,7 +275,17 @@ export default function ArtistProfile() {
       scene.add(spotlight);
     });
 
+    setLoadingProgress(70);
+    setLoadingStage('optimizing');
 
+
+
+    // Mark as ready
+    setTimeout(() => {
+      setLoadingProgress(100);
+      setLoadingStage('ready');
+      setTimeout(() => setLoading(false), 500);
+    }, 500);
 
     // Animation
     let time = 0;
@@ -333,6 +354,11 @@ export default function ArtistProfile() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
+      <ThreeDLoader 
+        visible={loading} 
+        progress={loadingProgress} 
+        stage={loadingStage} 
+      />
       <canvas ref={canvasRef} className="absolute inset-0" />
       
       {/* UI Overlay */}
@@ -379,161 +405,50 @@ export default function ArtistProfile() {
           </span>
         </div>
 
-        {/* Central Content */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto px-4">
-          <div className="text-center max-w-md w-full">
-            {/* Artist Info */}
-            <div className="mb-8">
-              <div className="w-32 h-32 mx-auto mb-4 backdrop-blur-md bg-white/5 border border-cyan-400/30 rounded-2xl flex items-center justify-center overflow-hidden">
-                {user?.imported_avatar ? (
-                  <img src={user.imported_avatar} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-12 h-12 text-cyan-400" />
-                )}
-              </div>
-              <h1 className="text-4xl font-light text-white tracking-wide mb-2">
-                {user?.imported_name || user?.full_name || 'Artist Name'}
-              </h1>
-              <p className="text-cyan-400 text-sm uppercase tracking-widest mb-3">
-                {user?.imported_bio || 'Electronic · Producer'}
-              </p>
-              {user?.social_connected && (
-                <div className="inline-block backdrop-blur-md bg-white/5 border border-cyan-400/30 rounded-full px-3 py-1 mb-2">
-                  <div className="text-[10px] text-cyan-400 uppercase tracking-wider">
-                    Connected via {user.social_connected}
+        {/* Central Content - Minimized to not block 3D */}
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-auto px-4 pb-4">
+          <div className="text-center max-w-md w-full mx-auto">
+            {/* Compact Artist Info Bar */}
+            <div className="backdrop-blur-xl bg-black/60 border border-cyan-400/30 rounded-2xl p-4 mb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 backdrop-blur-md bg-white/5 border border-cyan-400/30 rounded-xl flex items-center justify-center overflow-hidden">
+                    {user?.imported_avatar ? (
+                      <img src={user.imported_avatar} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-6 h-6 text-cyan-400" />
+                    )}
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-medium text-white">
+                      {user?.imported_name || user?.full_name || 'Artist Name'}
+                    </h1>
+                    <p className="text-xs text-cyan-400">{user?.imported_bio || 'Electronic · Producer'}</p>
                   </div>
                 </div>
-              )}
-              <button
-                onClick={() => setShowSocialAuth(true)}
-                className="inline-flex items-center gap-2 backdrop-blur-md bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-white/60 hover:text-cyan-400 hover:border-cyan-400/30 transition-all"
-              >
-                <Plus className="w-3 h-3" />
-                Import Social Profile
-              </button>
-              <div className="mt-3 inline-block backdrop-blur-md bg-black/40 border border-white/10 rounded-full px-4 py-1.5">
-                <div className="text-[10px] text-white/40 uppercase tracking-wider">
-                  Powered by 33.3FM DOGECHAIN
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowPhygital(true)}
+                    className="backdrop-blur-md bg-cyan-400/20 border border-cyan-400/30 rounded-lg px-3 py-2 hover:bg-cyan-400/30 transition-all flex items-center gap-1"
+                  >
+                    <Package className="w-4 h-4 text-cyan-400" />
+                    {phygitalItems.length > 0 && (
+                      <span className="text-xs text-white font-bold">{phygitalItems.length}</span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setShowTryOn(true)}
+                    className="backdrop-blur-md bg-white/10 border border-white/20 rounded-lg px-3 py-2 hover:bg-white/20 transition-all"
+                  >
+                    <Eye className="w-4 h-4 text-white" />
+                  </button>
                 </div>
               </div>
             </div>
-
-            {/* Follow Button */}
-            <div className="mb-6 flex justify-center">
-              <FollowButton 
-                artistEmail={user?.email || 'artist@example.com'} 
-                artistName={user?.imported_name || user?.full_name || 'Artist'} 
-              />
-            </div>
-
-            {/* Links */}
-            <div className="space-y-3 mb-6">
-              {links.map((link, i) => (
-                <a
-                  key={i}
-                  href={link.url}
-                  className="block backdrop-blur-md bg-white/5 border border-white/10 rounded-xl px-6 py-3.5 hover:bg-white/10 hover:border-cyan-400/50 transition-all group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-light tracking-wide">{link.title}</span>
-                    <ArrowUpRight className="w-4 h-4 text-white/40 group-hover:text-cyan-400 transition-colors" />
-                  </div>
-                </a>
-              ))}
-            </div>
-
-            {/* Phygital Collection Button */}
-            <div className="mb-4 flex gap-3 justify-center">
-              <button
-                onClick={() => setShowPhygital(true)}
-                className="backdrop-blur-md bg-gradient-to-r from-cyan-400/20 to-purple-600/20 border border-cyan-400/30 rounded-xl px-6 py-3 hover:from-cyan-400/30 hover:to-purple-600/30 transition-all flex items-center gap-2"
-              >
-                <Package className="w-4 h-4 text-cyan-400" />
-                <span className="text-white font-medium">Phygital Items</span>
-                {phygitalItems.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-cyan-400 text-black text-xs font-bold">
-                    {phygitalItems.length}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setShowTryOn(true)}
-                className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl px-6 py-3 hover:bg-white/10 transition-all flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4 text-white/60" />
-                <span className="text-white/80 font-medium">Virtual Try-On</span>
-              </button>
-            </div>
-
-            {/* Fan Interactions - Optimized Layout */}
-            <div className="mb-6 mx-auto" style={{ maxWidth: '28rem' }}>
-              <FanInteractions 
-                artistEmail={user?.email || 'artist@example.com'}
-                artistName={user?.imported_name || user?.full_name || 'Artist'}
-              />
-            </div>
-
-            {/* Upgrade CTA */}
-            <div className="backdrop-blur-md bg-gradient-to-br from-cyan-400/10 to-purple-600/10 border border-cyan-400/30 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-light text-white">
-                  Upgrade to Remove Branding
-                </h3>
-                <span className="text-[10px] text-white/40 uppercase tracking-wider">Premium</span>
-              </div>
-              <p className="text-xs text-white/60 mb-4 leading-relaxed">
-                Remove 33.3FM watermarks, launch your own branded radio station with live streaming, scheduling, and full creative control
-              </p>
-              <Link
-                to={createPageUrl('BroadcastPortal')}
-                className="inline-block w-full px-4 py-2.5 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-xl text-sm uppercase tracking-wider hover:from-cyan-300 hover:to-purple-500 transition-all shadow-lg shadow-cyan-400/20"
-              >
-                Upgrade to Broadcast Portal
-              </Link>
-            </div>
           </div>
         </div>
 
-        {/* Bottom Left - Fan Wall Monitor Label */}
-        <div className="absolute bottom-20 left-8 pointer-events-auto">
-          <div className="backdrop-blur-xl bg-black/60 border border-cyan-400/30 rounded-xl px-4 py-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-cyan-400 text-xs uppercase tracking-wider">Live Fan Wall</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Bottom Info - Left Side */}
-        <div className="absolute bottom-4 left-4 max-w-md">
-          <div className="backdrop-blur-xl bg-black/60 border border-white/10 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400/20 to-transparent flex items-center justify-center border border-cyan-400/30">
-                <User className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div>
-                <h2 className="text-xl font-light text-white tracking-wide">
-                  Free 3D Profile
-                </h2>
-                <div className="text-xs text-white/40 uppercase tracking-wider">Artist Discovery Portal</div>
-              </div>
-            </div>
-            <p className="text-xs text-white/60 leading-relaxed mb-3">
-              Your free 3D gallery space with permanent 33.3FM branding. Modern link-in-bio alternative with fast loading and professional presentation.
-            </p>
-            <div className="flex flex-wrap gap-2 text-[10px] uppercase tracking-wider">
-              <span className="px-3 py-1 rounded-full bg-cyan-400/20 text-cyan-400 border border-cyan-400/30">
-                Free Tier
-              </span>
-              <span className="px-3 py-1 rounded-full bg-white/5 text-white/60 border border-white/10">
-                3D Gallery
-              </span>
-              <span className="px-3 py-1 rounded-full bg-purple-400/20 text-purple-400 border border-purple-400/30">
-                33.3FM Branded
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Social Auth Modal */}
