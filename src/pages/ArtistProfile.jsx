@@ -1,11 +1,28 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { base44 } from '@/api/base44Client';
 import * as THREE from 'three';
-import { ArrowLeft, User, ArrowUpRight } from 'lucide-react';
+import { ArrowLeft, User, ArrowUpRight, Plus } from 'lucide-react';
+import SocialAuth from '@/components/auth/SocialAuth';
 
 export default function ArtistProfile() {
   const canvasRef = useRef(null);
+  const [user, setUser] = useState(null);
+  const [showSocialAuth, setShowSocialAuth] = useState(false);
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+    } catch (error) {
+      console.error('User not logged in');
+    }
+  };
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -297,16 +314,34 @@ export default function ArtistProfile() {
           <div className="text-center max-w-md w-full">
             {/* Artist Info */}
             <div className="mb-8">
-              <div className="w-32 h-32 mx-auto mb-4 backdrop-blur-md bg-white/5 border border-cyan-400/30 rounded-2xl flex items-center justify-center">
-                <User className="w-12 h-12 text-cyan-400" />
+              <div className="w-32 h-32 mx-auto mb-4 backdrop-blur-md bg-white/5 border border-cyan-400/30 rounded-2xl flex items-center justify-center overflow-hidden">
+                {user?.imported_avatar ? (
+                  <img src={user.imported_avatar} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-12 h-12 text-cyan-400" />
+                )}
               </div>
               <h1 className="text-4xl font-light text-white tracking-wide mb-2">
-                Artist Name
+                {user?.imported_name || user?.full_name || 'Artist Name'}
               </h1>
               <p className="text-cyan-400 text-sm uppercase tracking-widest mb-3">
-                Electronic · Producer
+                {user?.imported_bio || 'Electronic · Producer'}
               </p>
-              <div className="inline-block backdrop-blur-md bg-black/40 border border-white/10 rounded-full px-4 py-1.5">
+              {user?.social_connected && (
+                <div className="inline-block backdrop-blur-md bg-white/5 border border-cyan-400/30 rounded-full px-3 py-1 mb-2">
+                  <div className="text-[10px] text-cyan-400 uppercase tracking-wider">
+                    Connected via {user.social_connected}
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={() => setShowSocialAuth(true)}
+                className="inline-flex items-center gap-2 backdrop-blur-md bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-white/60 hover:text-cyan-400 hover:border-cyan-400/30 transition-all"
+              >
+                <Plus className="w-3 h-3" />
+                Import Social Profile
+              </button>
+              <div className="mt-3 inline-block backdrop-blur-md bg-black/40 border border-white/10 rounded-full px-4 py-1.5">
                 <div className="text-[10px] text-white/40 uppercase tracking-wider">
                   Powered by 33.3FM DOGECHAIN
                 </div>
@@ -381,6 +416,21 @@ export default function ArtistProfile() {
           </div>
         </div>
       </div>
+
+      {/* Social Auth Modal */}
+      {showSocialAuth && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm px-4">
+          <div className="relative">
+            <button
+              onClick={() => setShowSocialAuth(false)}
+              className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white z-10"
+            >
+              ×
+            </button>
+            <SocialAuth onSuccess={() => { setShowSocialAuth(false); loadUser(); }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

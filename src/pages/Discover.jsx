@@ -34,7 +34,21 @@ export default function Discover() {
     setFollowing(newFollowing);
     
     if (user) {
-      await base44.auth.updateMe({ following: newFollowing });
+      try {
+        await base44.auth.updateMe({ following: newFollowing });
+        
+        // Create notification for artist
+        if (newFollowing.includes(artistId)) {
+          await base44.integrations.Core.SendEmail({
+            to: `artist${artistId}@33.3fm.example`,
+            subject: 'New Follower on 33.3FM',
+            body: `${user.full_name || user.email} started following you on 33.3FM DOGECHAIN!`
+          });
+        }
+      } catch (error) {
+        console.error('Follow failed:', error);
+        setFollowing(following); // Revert on error
+      }
     }
   };
 

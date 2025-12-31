@@ -10,20 +10,43 @@ export default function SocialAuth({ onSuccess }) {
   const handleSocialLogin = async (provider) => {
     setIsLoading(true);
     try {
-      // Social OAuth flow would be implemented here
-      // For demo purposes, we'll simulate success
-      const socialData = {
-        provider,
-        timestamp: Date.now()
-      };
+      // OAuth flow - open popup window
+      const width = 600;
+      const height = 700;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
       
-      const user = await base44.auth.me();
-      await base44.auth.updateMe({
-        social_connected: provider,
-        social_metadata: socialData
-      });
+      // Simulate OAuth popup (in production, this would redirect to provider OAuth)
+      const popup = window.open(
+        `https://oauth-provider.com/${provider}/authorize`,
+        'OAuth',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+
+      // Simulate OAuth response with profile data
+      setTimeout(async () => {
+        popup?.close();
+        
+        const mockProfileData = {
+          twitter: { name: 'Artist Name', username: '@artistname', bio: 'Electronic Music Producer', followers: 12500, avatar: 'https://i.pravatar.cc/150?img=33' },
+          github: { name: 'Developer Name', username: 'devname', bio: 'Full Stack Developer', repos: 87, avatar: 'https://i.pravatar.cc/150?img=12' },
+          google: { name: 'User Name', email: 'user@gmail.com', avatar: 'https://i.pravatar.cc/150?img=68' }
+        };
+
+        const profileData = mockProfileData[provider] || {};
+        
+        const user = await base44.auth.me();
+        await base44.auth.updateMe({
+          social_connected: provider,
+          social_profile: profileData,
+          imported_bio: profileData.bio || user.imported_bio,
+          imported_avatar: profileData.avatar || user.imported_avatar,
+          imported_name: profileData.name || user.imported_name,
+        });
+        
+        if (onSuccess) onSuccess(profileData);
+      }, 2000);
       
-      if (onSuccess) onSuccess(socialData);
     } catch (error) {
       console.error('Social login failed:', error);
     } finally {
