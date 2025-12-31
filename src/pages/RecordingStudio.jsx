@@ -506,13 +506,7 @@ export default function RecordingStudio() {
       recordLight.intensity = isRecording ? (0.8 + Math.sin(time * 3) * 0.2) : 0.3;
       recordingLight.material.emissiveIntensity = isRecording ? (1 + Math.sin(time * 3) * 0.2) : 0.5;
 
-      // Save indicator pulse
-      if (isSaving) {
-        saveIndicator.scale.setScalar(1 + Math.sin(time * 8) * 0.2);
-        limeGlowMaterial.emissiveIntensity = 0.8 + Math.sin(time * 8) * 0.4;
-      } else {
-        saveIndicator.scale.setScalar(0);
-      }
+
 
       // Particle animation
       const positions = particles.geometry.attributes.position.array;
