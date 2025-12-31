@@ -6,6 +6,7 @@ import PodcastBooth from './pages/PodcastBooth';
 import RecordingStudio from './pages/RecordingStudio';
 import Store from './pages/Store';
 import Subscription from './pages/Subscription';
+import Discover from './pages/Discover';
 
 
 export const PAGES = {
@@ -17,6 +18,7 @@ export const PAGES = {
     "RecordingStudio": RecordingStudio,
     "Store": Store,
     "Subscription": Subscription,
+    "Discover": Discover,
 }
 
 export const pagesConfig = {

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { Radio, Mic, Music, User, Radio as Station, Sparkles, Layers, Crown, ShoppingBag, User as UserIcon } from 'lucide-react';
+import { Radio, Mic, Music, User, Radio as Station, Sparkles, Layers, Crown, ShoppingBag, User as UserIcon, TrendingUp } from 'lucide-react';
 import NeuroConcierge from '@/components/navigation/NeuroConcierge';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
 import ElevatorDoors from '@/components/navigation/ElevatorDoors';
@@ -96,6 +96,13 @@ export default function Home() {
   }, []);
 
   const environments = [
+    {
+      name: 'Discover',
+      description: 'Content feed & recommendations',
+      icon: TrendingUp,
+      path: 'Discover',
+      tier: 'FREE'
+    },
     {
       name: 'Podcast Booth',
       description: 'Voice-first broadcast environment',
@@ -200,7 +207,7 @@ export default function Home() {
         </div>
 
         {/* Environment Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 max-w-7xl w-full">
           {environments.map((env) => (
             <Link
               key={env.path}

@@ -1,0 +1,283 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { base44 } from '@/api/base44Client';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search, TrendingUp, Radio, Music, Users, Bell, BellOff, ArrowLeft, Filter } from 'lucide-react';
+
+export default function Discover() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [following, setFollowing] = useState([]);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const loadUser = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      setFollowing(currentUser.following || []);
+    } catch (error) {
+      console.error('User not logged in');
+    }
+  };
+
+  const toggleFollow = async (artistId) => {
+    const newFollowing = following.includes(artistId)
+      ? following.filter(id => id !== artistId)
+      : [...following, artistId];
+    
+    setFollowing(newFollowing);
+    
+    if (user) {
+      await base44.auth.updateMe({ following: newFollowing });
+    }
+  };
+
+  const trendingArtists = [
+    { id: 1, name: 'DJ Red Fang', genre: 'Electronic', listeners: '12.3K', isLive: true },
+    { id: 2, name: 'Neon Pulse', genre: 'Synthwave', listeners: '8.7K', isLive: false },
+    { id: 3, name: 'Echo Chamber', genre: 'Ambient', listeners: '6.2K', isLive: true },
+    { id: 4, name: 'Bass Theory', genre: 'Drum & Bass', listeners: '5.1K', isLive: false }
+  ];
+
+  const newReleases = [
+    { id: 1, artist: 'DJ Red Fang', track: 'Midnight Signal', time: '2h ago' },
+    { id: 2, artist: 'Neon Pulse', track: 'Crystal Waves', time: '5h ago' },
+    { id: 3, artist: 'Echo Chamber', track: 'Deep Space', time: '1d ago' },
+    { id: 4, artist: 'Bass Theory', track: 'Frequency Drop', time: '2d ago' }
+  ];
+
+  const liveStreams = [
+    { id: 1, artist: 'DJ Red Fang', title: 'Late Night Session', viewers: 234, genre: 'Electronic' },
+    { id: 2, artist: 'Echo Chamber', title: 'Ambient Journey', viewers: 187, genre: 'Ambient' }
+  ];
+
+  const communityHighlights = [
+    { id: 1, user: 'Producer_Mike', content: 'Just dropped a new remix using the 3D studio!', likes: 45 },
+    { id: 2, user: 'Artist_Sarah', content: 'My first live broadcast on 33.3FM was incredible', likes: 38 },
+    { id: 3, user: 'DJ_Alex', content: 'The 3D Orchestra is a game changer for production', likes: 52 }
+  ];
+
+  const filteredContent = () => {
+    if (filter === 'live') return liveStreams;
+    if (filter === 'releases') return newReleases;
+    if (filter === 'artists') return trendingArtists;
+    return null;
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <div className="backdrop-blur-xl bg-black/60 border-b border-white/10 sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <Link 
+              to={createPageUrl('Home')}
+              className="flex items-center gap-2 text-white/60 hover:text-cyan-400 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm uppercase tracking-wider">Back</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-xs">33.3</span>
+              </div>
+              <div>
+                <div className="text-white font-bold text-sm">Discover</div>
+                <div className="text-white/40 text-[10px] uppercase tracking-wider">33.3FM</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+            <Input
+              placeholder="Search artists, tracks, or broadcasts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-12 bg-white/5 border-white/10 text-white h-12 rounded-xl"
+            />
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+            {['all', 'live', 'artists', 'releases', 'community'].map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-1.5 rounded-full text-xs uppercase tracking-wider whitespace-nowrap transition-all ${
+                  filter === f
+                    ? 'bg-cyan-400 text-black'
+                    : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Live Streams */}
+        {(filter === 'all' || filter === 'live') && (
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <Radio className="w-5 h-5 text-red-500" />
+              <h2 className="text-2xl font-light tracking-wide">Live Now</h2>
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {liveStreams.map((stream) => (
+                <div
+                  key={stream.id}
+                  className="backdrop-blur-md bg-gradient-to-br from-red-500/10 to-transparent border border-red-500/30 rounded-2xl p-6 hover:border-red-500/50 transition-all group cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-light text-white mb-1">{stream.artist}</h3>
+                      <p className="text-sm text-white/60">{stream.title}</p>
+                    </div>
+                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs uppercase tracking-wider border border-red-500/30">
+                      LIVE
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-white/60">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        <span>{stream.viewers}</span>
+                      </div>
+                      <span className="text-xs">{stream.genre}</span>
+                    </div>
+                    <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white">
+                      Join Stream
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Trending Artists */}
+        {(filter === 'all' || filter === 'artists') && (
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <TrendingUp className="w-5 h-5 text-cyan-400" />
+              <h2 className="text-2xl font-light tracking-wide">Trending Artists</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {trendingArtists.map((artist) => (
+                <div
+                  key={artist.id}
+                  className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-cyan-400/50 transition-all group"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-400/20 to-transparent border border-cyan-400/30 flex items-center justify-center">
+                      <Music className="w-6 h-6 text-cyan-400" />
+                    </div>
+                    {artist.isLive && (
+                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    )}
+                  </div>
+                  <h3 className="text-lg font-light text-white mb-1">{artist.name}</h3>
+                  <p className="text-xs text-white/60 mb-3">{artist.genre}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/40">{artist.listeners} listeners</span>
+                    <button
+                      onClick={() => toggleFollow(artist.id)}
+                      className={`p-2 rounded-lg transition-all ${
+                        following.includes(artist.id)
+                          ? 'bg-cyan-400 text-black'
+                          : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      }`}
+                    >
+                      {following.includes(artist.id) ? (
+                        <Bell className="w-4 h-4" />
+                      ) : (
+                        <BellOff className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* New Releases */}
+        {(filter === 'all' || filter === 'releases') && (
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <Music className="w-5 h-5 text-purple-400" />
+              <h2 className="text-2xl font-light tracking-wide">New Releases</h2>
+            </div>
+            <div className="space-y-3">
+              {newReleases.map((release) => (
+                <div
+                  key={release.id}
+                  className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 hover:border-purple-400/50 transition-all group cursor-pointer"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400/20 to-transparent border border-purple-400/30 flex items-center justify-center">
+                        <Music className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-light">{release.track}</h3>
+                        <p className="text-sm text-white/60">{release.artist}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-white/40">{release.time}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Community Highlights */}
+        {(filter === 'all' || filter === 'community') && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <Users className="w-5 h-5 text-cyan-400" />
+              <h2 className="text-2xl font-light tracking-wide">Community Highlights</h2>
+            </div>
+            <div className="space-y-3">
+              {communityHighlights.map((highlight) => (
+                <div
+                  key={highlight.id}
+                  className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10 hover:border-cyan-400/50 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400/20 to-transparent border border-cyan-400/30" />
+                      <div>
+                        <div className="text-white font-light">{highlight.user}</div>
+                        <div className="text-xs text-white/40">Community Member</div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/80 mb-3">{highlight.content}</p>
+                  <div className="flex items-center gap-4 text-xs text-white/40">
+                    <div className="flex items-center gap-1">
+                      <span>❤️</span>
+                      <span>{highlight.likes}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
