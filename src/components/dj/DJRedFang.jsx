@@ -22,16 +22,14 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
   };
 
   useEffect(() => {
-    if (isVisible) {
-      setIsTyping(true);
-      const timer = setTimeout(() => {
-        setMessage(contextMessages[context] || contextMessages.greeting);
-        setIsTyping(false);
-      }, 800);
-      return () => clearTimeout(timer);
-    }
+    setIsTyping(true);
+    const timer = setTimeout(() => {
+      setMessage(contextMessages[context] || contextMessages.greeting);
+      setIsTyping(false);
+    }, 800);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [context, isVisible]);
+  }, [context]);
 
   const askRedFang = async (question) => {
     setIsTyping(true);
