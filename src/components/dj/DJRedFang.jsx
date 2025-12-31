@@ -21,6 +21,9 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
     broadcast: "Your station, your rules. I'm here to keep the signal strong.",
   };
 
+  // DJ Red Fang's Official Playlist
+  const officialPlaylist = "https://open.spotify.com/embed/playlist/2VwOYrB1C93gNIPiBZNxhH?utm_source=generator&theme=0";
+
   useEffect(() => {
     setIsTyping(true);
     const timer = setTimeout(() => {
@@ -265,6 +268,23 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
           </div>
 
           {/* Track Suggestions */}
+          {/* Official Playlist */}
+          {isExpanded && (
+            <div className="mb-4">
+              <div className="text-xs text-white/60 mb-2">Official DJ Red Fang Playlist</div>
+              <iframe 
+                style={{borderRadius: '8px'}}
+                src={officialPlaylist}
+                width="100%" 
+                height="152" 
+                frameBorder="0" 
+                allowFullScreen="" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy"
+              />
+            </div>
+          )}
+
           {suggestions.length > 0 && (
             <div className="mb-4 space-y-2">
               {suggestions.map((track, i) => (
