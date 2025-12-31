@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Music, Play, Pause, SkipForward, DollarSign, Crown, Heart } from 'lucide-react';
+import { Music, Play, Pause, SkipForward, Zap, Crown, Heart, MessageSquare } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function Jukebox({ isLive = false }) {
@@ -11,11 +11,25 @@ export default function Jukebox({ isLive = false }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [trackRequest, setTrackRequest] = useState('');
-  const [tipAmount, setTipAmount] = useState(5);
+  const [tipAmount, setTipAmount] = useState(50);
+  const [chaosBalance, setChaosBalance] = useState(0);
 
   useEffect(() => {
     loadQueue();
+    loadChaosBalance();
   }, []);
+
+  const loadChaosBalance = async () => {
+    try {
+      const user = await base44.auth.me();
+      const accounts = await base44.entities.ChaosXP.filter({ user_email: user.email });
+      if (accounts.length > 0) {
+        setChaosBalance(accounts[0].balance);
+      }
+    } catch (error) {
+      console.error('Failed to load CHAOS XP balance:', error);
+    }
+  };
 
   const loadQueue = async () => {
     try {
@@ -30,10 +44,26 @@ export default function Jukebox({ isLive = false }) {
   };
 
   const requestTrack = async () => {
-    if (!trackRequest.trim()) return;
+    if (!trackRequest.trim() || tipAmount > chaosBalance) return;
     
     try {
       const user = await base44.auth.me();
+      
+      // Deduct CHAOS XP
+      const accounts = await base44.entities.ChaosXP.filter({ user_email: user.email });
+      const account = accounts[0];
+      await base44.entities.ChaosXP.update(account.id, {
+        balance: account.balance - tipAmount,
+        total_spent: account.total_spent + tipAmount
+      });
+
+      // Log transaction
+      await base44.entities.ChaosTransaction.create({
+        user_email: user.email,
+        type: 'spend',
+        amount: tipAmount,
+        description: `Jukebox request: ${trackRequest}`
+      });
       
       // Create track request
       await base44.entities.TrackRequest.create({
@@ -41,23 +71,13 @@ export default function Jukebox({ isLive = false }) {
         track_name: trackRequest,
         tip_amount: tipAmount,
         status: 'pending',
-        priority: tipAmount >= 10 ? 'high' : 'normal'
+        priority: tipAmount >= 100 ? 'high' : 'normal'
       });
-
-      // Process tip if amount > 0
-      if (tipAmount > 0) {
-        await base44.entities.Tip.create({
-          from_user: user.email,
-          to_user: 'dj@33.3fm.com',
-          amount: tipAmount,
-          message: `Track request: ${trackRequest}`,
-          room: 'jukebox'
-        });
-      }
 
       setTrackRequest('');
       setShowRequestModal(false);
       loadQueue();
+      loadChaosBalance();
     } catch (error) {
       console.error('Failed to request track:', error);
     }
@@ -83,14 +103,17 @@ export default function Jukebox({ isLive = false }) {
             <p className="text-cyan-400 text-xs">{queue.length} tracks in queue</p>
           </div>
         </div>
-        <Button
-          onClick={() => setShowRequestModal(true)}
-          size="sm"
-          className="bg-gradient-to-r from-red-500 to-cyan-400 hover:from-red-600 hover:to-cyan-500 text-white text-xs"
-        >
-          <DollarSign className="w-3 h-3 mr-1" />
-          Request Track
-        </Button>
+        <div className="flex items-center gap-2">
+          <div className="text-xs text-cyan-400">{chaosBalance} XP</div>
+          <Button
+            onClick={() => setShowRequestModal(true)}
+            size="sm"
+            className="bg-gradient-to-r from-red-500 to-cyan-400 hover:from-red-600 hover:to-cyan-500 text-white text-xs"
+          >
+            <Zap className="w-3 h-3 mr-1" />
+            Request
+          </Button>
+        </div>
       </div>
 
       {/* Now Playing */}
@@ -104,7 +127,7 @@ export default function Jukebox({ isLive = false }) {
                 Requested by {currentTrack.user_email.split('@')[0]}
                 {currentTrack.tip_amount > 0 && (
                   <span className="ml-2 text-red-400">
-                    • ${currentTrack.tip_amount} tip
+                    • {currentTrack.tip_amount} XP
                   </span>
                 )}
               </div>
@@ -155,7 +178,7 @@ export default function Jukebox({ isLive = false }) {
                 {track.tip_amount > 0 && (
                   <div className="flex items-center gap-1 text-xs text-red-400">
                     <Crown className="w-3 h-3" />
-                    ${track.tip_amount}
+                    {track.tip_amount} XP
                   </div>
                 )}
               </div>
@@ -188,21 +211,25 @@ export default function Jukebox({ isLive = false }) {
             </div>
 
             <div>
-              <label className="text-xs text-white/60 uppercase tracking-wider mb-2 block">
-                Tip Amount (Higher tips = Priority Queue)
+              <label className="text-xs text-white/60 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>CHAOS XP Amount</span>
+                <span className="text-cyan-400">{chaosBalance} XP available</span>
               </label>
               <div className="grid grid-cols-4 gap-2 mb-2">
-                {[0, 5, 10, 20].map((amount) => (
+                {[0, 50, 100, 200].map((amount) => (
                   <button
                     key={amount}
                     onClick={() => setTipAmount(amount)}
+                    disabled={amount > chaosBalance && amount > 0}
                     className={`px-3 py-2 rounded-lg text-sm transition-all ${
                       tipAmount === amount
                         ? 'bg-gradient-to-r from-red-500 to-cyan-400 text-white'
+                        : amount > chaosBalance && amount > 0
+                        ? 'bg-white/5 text-white/20 cursor-not-allowed'
                         : 'bg-white/5 text-white/60 hover:bg-white/10'
                     }`}
                   >
-                    {amount === 0 ? 'Free' : `$${amount}`}
+                    {amount === 0 ? 'Free' : `${amount} XP`}
                   </button>
                 ))}
               </div>
@@ -211,6 +238,7 @@ export default function Jukebox({ isLive = false }) {
                 placeholder="Custom amount"
                 value={tipAmount}
                 onChange={(e) => setTipAmount(parseFloat(e.target.value) || 0)}
+                max={chaosBalance}
                 className="bg-white/5 border-white/10 text-white"
               />
             </div>
@@ -222,16 +250,21 @@ export default function Jukebox({ isLive = false }) {
               </div>
               <div className="flex items-center gap-2">
                 <Crown className="w-3 h-3 text-cyan-400" />
-                <span>$10+ tips = Priority queue</span>
+                <span>100+ XP = Priority queue</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-3 h-3 text-purple-400" />
+                <span>AI DJ manages queue via agent</span>
               </div>
             </div>
 
             <Button
               onClick={requestTrack}
-              disabled={!trackRequest.trim()}
-              className="w-full bg-gradient-to-r from-red-500 to-cyan-400 hover:from-red-600 hover:to-cyan-500 text-white"
+              disabled={!trackRequest.trim() || (tipAmount > 0 && tipAmount > chaosBalance)}
+              className="w-full bg-gradient-to-r from-red-500 to-cyan-400 hover:from-red-600 hover:to-cyan-500 text-white disabled:opacity-50"
             >
-              Request Track {tipAmount > 0 && `• $${tipAmount} Tip`}
+              <Zap className="w-4 h-4 mr-2" />
+              Request Track {tipAmount > 0 && `• ${tipAmount} XP`}
             </Button>
           </div>
         </DialogContent>

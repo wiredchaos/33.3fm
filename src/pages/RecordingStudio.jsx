@@ -10,6 +10,7 @@ import MusicVisualizer from '@/components/audio/MusicVisualizer';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
 import WatermarkRemoval from '@/components/monetization/WatermarkRemoval';
 import Jukebox from '@/components/media/Jukebox';
+import ChangeMachine from '@/components/monetization/ChangeMachine';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
@@ -17,6 +18,7 @@ export default function RecordingStudio() {
   const [isSaving, setIsSaving] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [showElevator, setShowElevator] = useState(false);
+  const [showChangeMachine, setShowChangeMachine] = useState(false);
   const [hasWatermarkRemoval, setHasWatermarkRemoval] = useState(false);
 
   useEffect(() => {
@@ -664,6 +666,13 @@ export default function RecordingStudio() {
             </div>
             <WatermarkRemoval />
             <button
+              onClick={() => setShowChangeMachine(true)}
+              className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-400/20 to-purple-600/20 border border-cyan-400/30 text-cyan-400 hover:bg-cyan-400/30 transition-all flex items-center gap-2"
+            >
+              <Music className="w-4 h-4" />
+              Get CHAOS XP
+            </button>
+            <button
               onClick={() => setShowElevator(true)}
               className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2"
             >
@@ -728,6 +737,25 @@ export default function RecordingStudio() {
         {/* DJ Red Fang */}
         <DJRedFang context={isRecording ? 'recording' : 'greeting'} currentGenre="electronic" chatSentiment="focused" />
 
+        {/* Spotify Live Embed */}
+        <div className="absolute top-24 left-6 pointer-events-auto">
+          <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 w-80">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm uppercase tracking-wider text-white/60">33.3FM LIVE</h3>
+              <Music className="w-4 h-4 text-red-400 animate-pulse" />
+            </div>
+            <iframe 
+              style={{borderRadius: '12px'}}
+              src="https://open.spotify.com/embed/playlist/2VwOYrB1C93gNIPiBZNxhH?utm_source=generator&theme=0"
+              width="100%" 
+              height="152" 
+              frameBorder="0" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy"
+            />
+          </div>
+        </div>
+
         {/* Jukebox */}
         <div className="fixed bottom-24 right-6 z-30 w-96 pointer-events-auto">
           <Jukebox isLive={isRecording} />
@@ -766,6 +794,9 @@ export default function RecordingStudio() {
 
       {/* 3D Elevator Navigation */}
       <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />
+
+      {/* Change Machine */}
+      <ChangeMachine isOpen={showChangeMachine} onClose={() => setShowChangeMachine(false)} />
     </div>
   );
 }
