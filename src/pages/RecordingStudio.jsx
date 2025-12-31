@@ -15,6 +15,8 @@ export default function RecordingStudio() {
   const [isSaving, setIsSaving] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [showElevator, setShowElevator] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -561,6 +563,17 @@ export default function RecordingStudio() {
     setTimeout(() => setIsSaving(false), 2000);
   };
 
+  const togglePlayback = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
       <canvas ref={canvasRef} className="absolute inset-0" />
@@ -636,12 +649,35 @@ export default function RecordingStudio() {
           </div>
         )}
 
-        {/* Music Visualizer */}
-        {isRecording && (
-          <div className="absolute top-24 left-6 pointer-events-auto">
-            <MusicVisualizer isActive={isRecording} intensity={1} />
+        {/* Music Player */}
+        <div className="absolute top-24 left-6 pointer-events-auto">
+          <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6 w-80">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm uppercase tracking-wider text-white/60">Studio Monitor</h3>
+              <Music className="w-4 h-4 text-cyan-400" />
+            </div>
+            
+            <iframe 
+              style={{borderRadius: '8px'}}
+              src="https://open.spotify.com/embed/playlist/2VwOYrB1C93gNIPiBZNxhH?utm_source=generator&theme=0"
+              width="100%" 
+              height="152" 
+              frameBorder="0" 
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              loading="lazy"
+            />
+            
+            <div className="mt-3 text-xs text-white/40 uppercase tracking-wider">
+              DJ Red Fang • Official Studio Mix
+            </div>
           </div>
-        )}
+          
+          {isRecording && (
+            <div className="mt-4">
+              <MusicVisualizer isActive={isRecording} intensity={1} />
+            </div>
+          )}
+        </div>
 
         {/* DJ Red Fang */}
         <DJRedFang context={isRecording ? 'recording' : 'greeting'} currentGenre="electronic" chatSentiment="focused" />
