@@ -13,6 +13,9 @@ import Jukebox from '@/components/media/Jukebox';
 import ChangeMachine from '@/components/monetization/ChangeMachine';
 import ThreeDKeyboard from '@/components/interactive/3DKeyboard';
 import MultiplayerChat from '@/components/social/MultiplayerChat';
+import ThreeDMicrophone from '@/components/interactive/3DMicrophone';
+import ThreeDDrumKit from '@/components/interactive/3DDrumKit';
+import ThreeDOrchestra from '@/components/interactive/3DOrchestra';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
@@ -22,6 +25,8 @@ export default function RecordingStudio() {
   const [showElevator, setShowElevator] = useState(false);
   const [showChangeMachine, setShowChangeMachine] = useState(false);
   const [hasWatermarkRemoval, setHasWatermarkRemoval] = useState(false);
+  const [isVocalRecording, setIsVocalRecording] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     const checkWatermark = async () => {
@@ -739,8 +744,8 @@ export default function RecordingStudio() {
         {/* DJ Red Fang */}
         <DJRedFang context={isRecording ? 'recording' : 'greeting'} currentGenre="electronic" chatSentiment="focused" />
 
-        {/* Spotify Live Embed */}
-        <div className="absolute top-24 left-6 pointer-events-auto space-y-4">
+        {/* Left Column - Studio Controls */}
+        <div className="absolute top-24 left-6 pointer-events-auto space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 w-80">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm uppercase tracking-wider text-white/60">33.3FM LIVE</h3>
@@ -757,6 +762,12 @@ export default function RecordingStudio() {
             />
           </div>
           <ThreeDKeyboard onNotePlay={(note) => console.log('Note played:', note)} />
+          <ThreeDMicrophone 
+            onRecord={() => setIsVocalRecording(!isVocalRecording)} 
+            isRecording={isVocalRecording} 
+          />
+          <ThreeDDrumKit onDrumHit={(drum) => console.log('Drum hit:', drum)} />
+          <ThreeDOrchestra isPremium={isPremium} />
         </div>
 
         {/* Social Features */}

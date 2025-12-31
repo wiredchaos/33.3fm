@@ -181,7 +181,26 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
 
   const handleCustomPrompt = async () => {
     if (!customPrompt.trim()) return;
-    await askRedFang(customPrompt);
+    
+    // Check if it's a track request
+    if (customPrompt.toLowerCase().includes('play') || customPrompt.toLowerCase().includes('request')) {
+      setIsTyping(true);
+      try {
+        const response = await base44.integrations.Core.InvokeLLM({
+          prompt: `You are DJ Red Fang. User requested: "${customPrompt}". 
+          
+Check the 33.3FM playlist (https://open.spotify.com/playlist/2VwOYrB1C93gNIPiBZNxhH) and respond as DJ Red Fang would. If it's a track request, confirm if the track is in rotation or suggest a similar track from the playlist. Keep it short and energetic.`,
+          add_context_from_internet: true
+        });
+        setMessage(response);
+        setIsTyping(false);
+      } catch (error) {
+        setMessage("Signal's a bit fuzzy right now. Try me again in a sec.");
+        setIsTyping(false);
+      }
+    } else {
+      await askRedFang(customPrompt);
+    }
     setCustomPrompt('');
   };
 
