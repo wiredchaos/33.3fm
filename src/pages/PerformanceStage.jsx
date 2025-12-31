@@ -7,12 +7,16 @@ import ThreeDKeyboard from '@/components/interactive/3DKeyboard';
 import MultiplayerChat from '@/components/social/MultiplayerChat';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
 import DJRedFang from '@/components/dj/DJRedFang';
+import ThreeDMicrophone from '@/components/interactive/3DMicrophone';
+import ThreeDDrumKit from '@/components/interactive/3DDrumKit';
+import ThreeDOrchestra from '@/components/interactive/3DOrchestra';
 
 export default function PerformanceStage() {
   const canvasRef = useRef(null);
   const [isLive, setIsLive] = useState(false);
   const [showElevator, setShowElevator] = useState(false);
   const [audienceCount, setAudienceCount] = useState(47);
+  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -208,14 +212,20 @@ export default function PerformanceStage() {
           </div>
         </div>
 
-        {/* 3D Keyboard */}
-        <div className="absolute top-24 left-6 pointer-events-auto">
+        {/* Left Side Instruments */}
+        <div className="absolute top-24 left-6 pointer-events-auto space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           <ThreeDKeyboard onNotePlay={(note) => console.log('Played:', note)} />
+          <ThreeDMicrophone 
+            onRecord={() => setIsRecording(!isRecording)} 
+            isRecording={isRecording} 
+          />
+          <ThreeDDrumKit onDrumHit={(drum) => console.log('Hit:', drum)} />
         </div>
 
-        {/* Multiplayer Chat */}
-        <div className="absolute top-24 right-6 w-96 pointer-events-auto">
+        {/* Right Side - Chat & Orchestra */}
+        <div className="absolute top-24 right-6 w-[500px] pointer-events-auto space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           <MultiplayerChat room="performance" />
+          <ThreeDOrchestra isPremium={false} />
         </div>
 
         {/* DJ Red Fang */}

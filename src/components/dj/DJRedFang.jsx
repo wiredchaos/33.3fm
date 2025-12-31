@@ -51,8 +51,10 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
   const generateTrackSuggestions = async () => {
     setIsTyping(true);
     try {
+      // Pull real songs from 33.3FM Spotify playlist
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are DJ Red Fang. Generate 3 track suggestions. Current genre: ${currentGenre}. Chat vibe: ${chatSentiment}. Return ONLY a JSON array of objects with "artist" and "track" fields.`,
+        prompt: `You are DJ Red Fang at 33.3FM. Pull 3 real track suggestions from the official 33.3FM Spotify playlist (https://open.spotify.com/playlist/2VwOYrB1C93gNIPiBZNxhH). Current genre: ${currentGenre}. Chat vibe: ${chatSentiment}. Return ONLY real tracks that exist in that playlist. Format: JSON array with "artist" and "track" fields.`,
+        add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
@@ -70,9 +72,9 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
         }
       });
       setSuggestions(response.tracks || []);
-      setMessage(`Based on the ${chatSentiment} energy in the chat, here's what's hitting right now:`);
+      setMessage(`Fresh from the 33.3FM vault! These tracks are fire right now:`);
     } catch (error) {
-      setMessage("Let me read the room first...");
+      setMessage("Let me dig through the crates...");
     } finally {
       setIsTyping(false);
     }
@@ -141,6 +143,37 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
       setMessage(`Full setlist incoming. This is how we ride the wave:`);
     } catch (error) {
       setMessage("Give me a sec to mix this up...");
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleTrackRequest = async () => {
+    if (!customPrompt.trim()) return;
+    setIsTyping(true);
+    
+    try {
+      const user = await base44.auth.me();
+      
+      // Create track request in the system
+      await base44.entities.TrackRequest.create({
+        user_email: user.email,
+        track_name: customPrompt,
+        tip_amount: 0,
+        status: 'pending',
+        priority: 'normal'
+      });
+
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are DJ Red Fang. A user requested: "${customPrompt}". Check if this track exists in the 33.3FM Spotify playlist (https://open.spotify.com/playlist/2VwOYrB1C93gNIPiBZNxhH) or is a valid song. If yes, acknowledge you'll queue it. If no, suggest a similar track from the playlist. Keep it short and DJ-like.`,
+        add_context_from_internet: true
+      });
+      
+      setMessage(response);
+      setCustomPrompt('');
+    } catch (error) {
+      setMessage("Got your request! Adding it to the queue... 📀");
+      setCustomPrompt('');
     } finally {
       setIsTyping(false);
     }
@@ -306,25 +339,29 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
             </div>
           )}
 
-          {/* Custom Prompt */}
+          {/* Track Request */}
           {isExpanded && (
             <div className="mb-4">
-              <div className="text-xs text-white/60 mb-2">Ask Red Fang</div>
+              <div className="text-xs text-white/60 mb-2">Request a Track</div>
               <div className="flex gap-2">
                 <Input
-                  placeholder="What should I play next?"
+                  placeholder="Request a song or ask Red Fang..."
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleCustomPrompt()}
+                  onKeyPress={(e) => e.key === 'Enter' && handleTrackRequest()}
                   className="bg-white/5 border-red-500/30 text-white text-sm h-8"
                 />
                 <Button
-                  onClick={handleCustomPrompt}
+                  onClick={handleTrackRequest}
                   size="sm"
                   className="bg-red-500 hover:bg-red-600 h-8 px-3"
+                  title="Request Track"
                 >
-                  <Sparkles className="w-3 h-3" />
+                  <Radio className="w-3 h-3" />
                 </Button>
+              </div>
+              <div className="text-[10px] text-white/40 mt-1">
+                Real songs from 33.3FM playlist • Powered by AI
               </div>
             </div>
           )}
