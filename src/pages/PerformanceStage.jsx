@@ -19,6 +19,7 @@ export default function PerformanceStage() {
   const [audienceCount, setAudienceCount] = useState(47);
   const [isRecording, setIsRecording] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [, forceUpdate] = useState();
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -95,6 +96,43 @@ export default function PerformanceStage() {
       scene.add(avatar);
     }
 
+    // Center Stage Microphone Stand
+    const micStand = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.08, 3, 16),
+      new THREE.MeshStandardMaterial({
+        color: 0x333333,
+        metalness: 0.9,
+        roughness: 0.1
+      })
+    );
+    micStand.position.set(0, 2, 0);
+    scene.add(micStand);
+
+    // Microphone
+    const micBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.15, 0.4, 16),
+      new THREE.MeshStandardMaterial({
+        color: 0x1a1a1a,
+        metalness: 0.9,
+        roughness: 0.2
+      })
+    );
+    micBody.position.set(0, 3.7, 0);
+    scene.add(micBody);
+
+    const micGrille = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 16, 16),
+      new THREE.MeshStandardMaterial({
+        color: 0x00ffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: isRecording ? 1.0 : 0.3,
+        metalness: 0.8,
+        roughness: 0.3
+      })
+    );
+    micGrille.position.set(0, 4, 0);
+    scene.add(micGrille);
+
     // Holographic screens
     const screens = [];
     for (let i = 0; i < 3; i++) {
@@ -155,6 +193,11 @@ export default function PerformanceStage() {
         screen.material.emissiveIntensity = 0.6 + Math.sin(time * 2 + i) * 0.2;
       });
 
+      // Microphone glow
+      micGrille.material.emissiveIntensity = isRecording 
+        ? (1.0 + Math.sin(time * 5) * 0.3)
+        : (0.3 + Math.sin(time * 2) * 0.1);
+
       mainLight.intensity = isLive ? (1.5 + Math.sin(time * 4) * 0.5) : 1;
 
       renderer.render(scene, camera);
@@ -172,7 +215,15 @@ export default function PerformanceStage() {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isLive]);
+  }, [isLive, isRecording]);
+
+  // Sound bar animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      forceUpdate({});
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
@@ -233,6 +284,31 @@ export default function PerformanceStage() {
 
         {/* DJ Red Fang */}
         <DJRedFang context="live" currentGenre="electronic" chatSentiment="hyped" />
+
+        {/* Sound Bar Visualizer - Bottom Center */}
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 pointer-events-auto">
+          <div className="backdrop-blur-xl bg-black/60 border border-cyan-400/30 rounded-2xl px-8 py-4">
+            <div className="flex items-end gap-1 h-16">
+              {[...Array(32)].map((_, i) => {
+                const height = isLive 
+                  ? Math.random() * 100 
+                  : 20 + Math.sin(Date.now() / 200 + i) * 15;
+                return (
+                  <div
+                    key={i}
+                    className="w-1.5 bg-gradient-to-t from-cyan-400 to-purple-600 rounded-full transition-all duration-100"
+                    style={{ height: `${height}%` }}
+                  />
+                );
+              })}
+            </div>
+            <div className="mt-2 text-center">
+              <div className="text-xs text-cyan-400 uppercase tracking-wider">
+                {isRecording ? '● Recording' : 'Audio Monitor'}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Bottom Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
