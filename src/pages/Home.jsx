@@ -2,14 +2,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
-import { Radio, Mic, Music, User, Radio as Station, Sparkles, Layers, Crown, ShoppingBag } from 'lucide-react';
+import { Radio, Mic, Music, User, Radio as Station, Sparkles, Layers, Crown, ShoppingBag, User as UserIcon } from 'lucide-react';
 import NeuroConcierge from '@/components/navigation/NeuroConcierge';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
+import ElevatorDoors from '@/components/navigation/ElevatorDoors';
+import SocialAuth from '@/components/auth/SocialAuth';
 
 export default function Home() {
   const canvasRef = useRef(null);
   const [showTour, setShowTour] = useState(false);
   const [showElevator, setShowElevator] = useState(false);
+  const [showDoors, setShowDoors] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
+  const [showSocialAuth, setShowSocialAuth] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -116,10 +127,19 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
-      <canvas ref={canvasRef} className="absolute inset-0" />
+    <div className="relative w-full min-h-screen overflow-x-hidden bg-black">
+      {showDoors && <ElevatorDoors onDoorsOpen={() => setShowDoors(false)} />}
       
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
+      <canvas 
+        ref={canvasRef} 
+        className="fixed inset-0" 
+        style={{ transform: `translateY(${scrollY * 0.5}px)` }}
+      />
+      
+      <div 
+        className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4"
+        style={{ transform: `translateY(${scrollY * -0.2}px)` }}
+      >
         {/* Logo & Title */}
         <div className="text-center mb-16">
           <div className="mb-4 flex items-center justify-center gap-3">
@@ -169,6 +189,13 @@ export default function Home() {
               <ShoppingBag className="w-4 h-4" />
               Store
             </Link>
+            <button
+              onClick={() => setShowSocialAuth(true)}
+              className="px-4 py-2 bg-white/5 border border-purple-400/30 text-purple-400 rounded-full text-sm flex items-center gap-2 hover:bg-purple-400/10 transition-all"
+            >
+              <User className="w-4 h-4" />
+              Connect
+            </button>
           </div>
         </div>
 
@@ -221,6 +248,21 @@ export default function Home() {
 
       {/* 3D Elevator Navigation */}
       <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />
+
+      {/* Social Auth Modal */}
+      {showSocialAuth && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="relative">
+            <button
+              onClick={() => setShowSocialAuth(false)}
+              className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+            >
+              ×
+            </button>
+            <SocialAuth onSuccess={() => setShowSocialAuth(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

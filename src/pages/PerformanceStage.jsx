@@ -10,6 +10,7 @@ import DJRedFang from '@/components/dj/DJRedFang';
 import ThreeDMicrophone from '@/components/interactive/3DMicrophone';
 import ThreeDDrumKit from '@/components/interactive/3DDrumKit';
 import ThreeDOrchestra from '@/components/interactive/3DOrchestra';
+import ThreeDSynthesizer from '@/components/interactive/3DSynthesizer';
 
 export default function PerformanceStage() {
   const canvasRef = useRef(null);
@@ -221,6 +222,7 @@ export default function PerformanceStage() {
             isRecording={isRecording} 
           />
           <ThreeDDrumKit onDrumHit={(drum) => console.log('Hit:', drum)} />
+          <ThreeDSynthesizer onPlay={(note) => console.log('Synth:', note)} />
         </div>
 
         {/* Right Side - Chat & Orchestra */}

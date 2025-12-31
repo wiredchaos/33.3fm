@@ -55,7 +55,8 @@ export default function ThreeDOrchestra({ isPremium = false }) {
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);
 
-    // Audio disabled for touchscreen demo
+    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+
     const orchestra = new THREE.Group();
     const instruments = [];
 
@@ -132,7 +133,20 @@ export default function ThreeDOrchestra({ isPremium = false }) {
     const mouse = new THREE.Vector2();
 
     const playInstrument = (frequency, name) => {
-      // Audio disabled for touchscreen
+      const oscillator = audioContextRef.current.createOscillator();
+      const gainNode = audioContextRef.current.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContextRef.current.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 1);
+      
+      oscillator.start();
+      oscillator.stop(audioContextRef.current.currentTime + 1);
     };
 
     const onMouseMove = (event) => {

@@ -16,6 +16,7 @@ import MultiplayerChat from '@/components/social/MultiplayerChat';
 import ThreeDMicrophone from '@/components/interactive/3DMicrophone';
 import ThreeDDrumKit from '@/components/interactive/3DDrumKit';
 import ThreeDOrchestra from '@/components/interactive/3DOrchestra';
+import ThreeDSynthesizer from '@/components/interactive/3DSynthesizer';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
@@ -767,6 +768,7 @@ export default function RecordingStudio() {
             isRecording={isVocalRecording} 
           />
           <ThreeDDrumKit onDrumHit={(drum) => console.log('Drum hit:', drum)} />
+          <ThreeDSynthesizer onPlay={(note) => console.log('Synth played:', note)} />
           <ThreeDOrchestra isPremium={isPremium} />
         </div>
 
