@@ -214,91 +214,129 @@ export default function RecordingStudio() {
     boothWalls.position.set(-3, 0, 0);
     scene.add(boothWalls);
 
-    // Professional microphone setup
+    // Professional microphone setup - CENTER STAGE PROMINENT
     const micStand = new THREE.Group();
     
-    // Base
+    // Heavy base
     const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.25, 0.3, 0.05, 32),
-      metalMaterial
+      new THREE.CylinderGeometry(0.35, 0.4, 0.08, 32),
+      new THREE.MeshStandardMaterial({
+        color: 0x1a1a1a,
+        metalness: 0.95,
+        roughness: 0.2
+      })
     );
-    base.position.y = 0.025;
+    base.position.y = 0.04;
     micStand.add(base);
     
-    // Stand pole
+    // Stand pole - taller and more visible
     const pole = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.02, 0.02, 1.5, 16),
-      metalMaterial
+      new THREE.CylinderGeometry(0.03, 0.03, 2.5, 16),
+      new THREE.MeshStandardMaterial({
+        color: 0x2a2a2a,
+        metalness: 0.9,
+        roughness: 0.3
+      })
     );
-    pole.position.y = 0.8;
+    pole.position.y = 1.3;
     micStand.add(pole);
     
     // Boom arm
     const boomArm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.015, 0.015, 0.8, 16),
-      metalMaterial
-    );
-    boomArm.position.set(0.3, 1.6, 0);
-    boomArm.rotation.z = Math.PI / 3;
-    micStand.add(boomArm);
-    
-    // Microphone body - realistic Neumann style
-    const micBody = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.06, 0.06, 0.35, 32),
-      new THREE.MeshStandardMaterial({ 
-        color: 0x2a2a2a, 
-        roughness: 0.4, 
-        metalness: 0.8 
+      new THREE.CylinderGeometry(0.02, 0.02, 1.2, 16),
+      new THREE.MeshStandardMaterial({
+        color: 0x2a2a2a,
+        metalness: 0.9,
+        roughness: 0.3
       })
     );
-    micBody.position.set(0.5, 2, 0);
+    boomArm.position.set(0.4, 2.5, 0);
+    boomArm.rotation.z = Math.PI / 4;
+    micStand.add(boomArm);
+    
+    // Microphone body - LARGE Neumann U87 style
+    const micBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.1, 0.1, 0.5, 32),
+      new THREE.MeshStandardMaterial({ 
+        color: 0x1a1a1a, 
+        roughness: 0.3, 
+        metalness: 0.85,
+        emissive: isVocalRecording ? 0x00ffff : 0x000000,
+        emissiveIntensity: isVocalRecording ? 0.3 : 0
+      })
+    );
+    micBody.position.set(0.8, 3, 0);
     micBody.rotation.z = Math.PI / 2;
     micStand.add(micBody);
     
-    // Mic grille
+    // Mic grille - GLOWING when recording
     const micGrille = new THREE.Mesh(
-      new THREE.SphereGeometry(0.08, 32, 32),
+      new THREE.SphereGeometry(0.12, 32, 32),
       new THREE.MeshStandardMaterial({ 
-        color: 0x4a4a4a, 
-        roughness: 0.6, 
-        metalness: 0.9 
+        color: isVocalRecording ? 0x00ffff : 0x3a3a3a,
+        roughness: 0.5, 
+        metalness: 0.95,
+        emissive: isVocalRecording ? 0x00ffff : 0x333333,
+        emissiveIntensity: isVocalRecording ? 0.8 : 0.2
       })
     );
-    micGrille.position.set(0.68, 2, 0);
+    micGrille.position.set(1.05, 3, 0);
     micStand.add(micGrille);
     
-    // Shock mount
+    // Shock mount rings
     const shockRing1 = new THREE.Mesh(
-      new THREE.TorusGeometry(0.12, 0.008, 16, 32),
-      metalMaterial
+      new THREE.TorusGeometry(0.18, 0.012, 16, 32),
+      new THREE.MeshStandardMaterial({
+        color: 0x666666,
+        metalness: 0.8,
+        roughness: 0.4
+      })
     );
-    shockRing1.position.set(0.5, 2, 0);
+    shockRing1.position.set(0.8, 3, 0);
     shockRing1.rotation.y = Math.PI / 2;
     micStand.add(shockRing1);
     
+    const shockRing2 = new THREE.Mesh(
+      new THREE.TorusGeometry(0.16, 0.01, 16, 32),
+      new THREE.MeshStandardMaterial({
+        color: 0x666666,
+        metalness: 0.8,
+        roughness: 0.4
+      })
+    );
+    shockRing2.position.set(0.8, 3, 0);
+    shockRing2.rotation.y = Math.PI / 2;
+    shockRing2.rotation.z = Math.PI / 4;
+    micStand.add(shockRing2);
+    
     // Pop filter
     const popFrame = new THREE.Mesh(
-      new THREE.TorusGeometry(0.15, 0.01, 16, 32),
-      metalMaterial
+      new THREE.TorusGeometry(0.22, 0.015, 16, 32),
+      new THREE.MeshStandardMaterial({
+        color: 0x333333,
+        metalness: 0.7,
+        roughness: 0.5
+      })
     );
-    popFrame.position.set(0.35, 2, 0);
+    popFrame.position.set(0.5, 3, 0);
     popFrame.rotation.y = Math.PI / 2;
     micStand.add(popFrame);
     
     const popMesh = new THREE.Mesh(
-      new THREE.CircleGeometry(0.15, 32),
+      new THREE.CircleGeometry(0.22, 32),
       new THREE.MeshStandardMaterial({ 
-        color: 0x1a1a1a, 
+        color: 0x0a0a0a, 
         transparent: true, 
-        opacity: 0.6,
+        opacity: 0.4,
         side: THREE.DoubleSide 
       })
     );
-    popMesh.position.set(0.35, 2, 0);
+    popMesh.position.set(0.5, 3, 0);
     popMesh.rotation.y = Math.PI / 2;
     micStand.add(popMesh);
     
-    micStand.position.set(-3, 0, 0);
+    // CENTER STAGE positioning - moved forward and to the left
+    micStand.position.set(-2, 0, 2);
     scene.add(micStand);
 
     // Professional mixing console
@@ -575,6 +613,12 @@ export default function RecordingStudio() {
 
       // Mic stand subtle movement
       micStand.rotation.y = Math.sin(time * 0.2) * 0.02;
+      
+      // Microphone glow pulse when recording vocals
+      if (isVocalRecording) {
+        micGrille.material.emissiveIntensity = 0.8 + Math.sin(time * 5) * 0.2;
+        micBody.material.emissiveIntensity = 0.3 + Math.sin(time * 4) * 0.1;
+      }
 
       // Recording light pulse
       recordLight.intensity = isRecording ? (0.8 + Math.sin(time * 3) * 0.2) : 0.3;
@@ -635,7 +679,7 @@ export default function RecordingStudio() {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isRecording, isSaving]);
+  }, [isRecording, isSaving, isVocalRecording]);
 
   const handleSave = () => {
     setIsSaving(true);

@@ -141,20 +141,125 @@ export default function ThreeDDrumKit({ onDrumHit }) {
     const mouse = new THREE.Vector2();
 
     const playDrum = (frequency, name) => {
-      const oscillator = audioContextRef.current.createOscillator();
-      const gainNode = audioContextRef.current.createGain();
+      const ctx = audioContextRef.current;
+      const now = ctx.currentTime;
       
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContextRef.current.destination);
-      
-      oscillator.frequency.value = frequency;
-      oscillator.type = name === 'Hi-Hat' || name === 'Crash' ? 'square' : 'sine';
-      
-      gainNode.gain.setValueAtTime(0.5, audioContextRef.current.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 0.3);
-      
-      oscillator.start();
-      oscillator.stop(audioContextRef.current.currentTime + 0.3);
+      // Professional drum synthesis
+      if (name === 'Kick') {
+        // 808-style kick drum
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.5);
+        
+        filter.type = 'lowpass';
+        filter.frequency.value = 200;
+        
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.5);
+      } else if (name === 'Snare') {
+        // Realistic snare with noise
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const noise = ctx.createBufferSource();
+        const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+        const noiseData = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < noiseData.length; i++) {
+          noiseData[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = noiseBuffer;
+        
+        const gain1 = ctx.createGain();
+        const gain2 = ctx.createGain();
+        const noiseGain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        osc1.frequency.value = 180;
+        osc2.frequency.value = 330;
+        filter.type = 'highpass';
+        filter.frequency.value = 1000;
+        
+        gain1.gain.setValueAtTime(0.4, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        
+        gain2.gain.setValueAtTime(0.3, now);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        
+        noiseGain.gain.setValueAtTime(0.5, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        
+        osc1.connect(gain1);
+        osc2.connect(gain2);
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        
+        gain1.connect(ctx.destination);
+        gain2.connect(ctx.destination);
+        noiseGain.connect(ctx.destination);
+        
+        osc1.start(now);
+        osc2.start(now);
+        noise.start(now);
+        osc1.stop(now + 0.2);
+        osc2.stop(now + 0.2);
+        noise.stop(now + 0.2);
+      } else if (name === 'Hi-Hat' || name === 'Crash') {
+        // Metallic cymbal sound
+        const noise = ctx.createBufferSource();
+        const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+        const noiseData = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < noiseData.length; i++) {
+          noiseData[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = noiseBuffer;
+        
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        filter.type = 'highpass';
+        filter.frequency.value = name === 'Crash' ? 5000 : 8000;
+        
+        const duration = name === 'Crash' ? 1.2 : 0.15;
+        gain.gain.setValueAtTime(name === 'Crash' ? 0.4 : 0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        
+        noise.start(now);
+        noise.stop(now + duration);
+      } else {
+        // Tom drums
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        osc.frequency.setValueAtTime(frequency, now);
+        osc.frequency.exponentialRampToValueAtTime(frequency * 0.5, now + 0.3);
+        
+        filter.type = 'lowpass';
+        filter.frequency.value = 800;
+        
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.4);
+      }
 
       setLastHit(name);
       setTimeout(() => setLastHit(null), 200);
