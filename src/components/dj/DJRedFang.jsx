@@ -185,9 +185,11 @@ export default function DJRedFang({ context = 'greeting', currentGenre = 'electr
         <div className="flex items-center justify-between p-4 border-b border-red-500/30 bg-gradient-to-r from-red-500/10 to-transparent">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-                <Mic2 className="w-5 h-5 text-white" />
-              </div>
+              <img 
+                src="https://i.scdn.co/image/ab67616d00001e0217dc79c9dc42ed849bba7020" 
+                alt="DJ Red Fang"
+                className="w-10 h-10 rounded-full object-cover border-2 border-red-500"
+              />
               <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-cyan-400 flex items-center justify-center">
                 <Volume2 className="w-2 h-2 text-black" />
               </div>

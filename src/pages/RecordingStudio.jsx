@@ -9,6 +9,7 @@ import DJRedFang from '@/components/dj/DJRedFang';
 import MusicVisualizer from '@/components/audio/MusicVisualizer';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
 import WatermarkRemoval from '@/components/monetization/WatermarkRemoval';
+import Jukebox from '@/components/media/Jukebox';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
@@ -726,6 +727,11 @@ export default function RecordingStudio() {
 
         {/* DJ Red Fang */}
         <DJRedFang context={isRecording ? 'recording' : 'greeting'} currentGenre="electronic" chatSentiment="focused" />
+
+        {/* Jukebox */}
+        <div className="fixed bottom-24 right-6 z-30 w-96 pointer-events-auto">
+          <Jukebox isLive={isRecording} />
+        </div>
 
         {/* Live Chat */}
         <LiveChat isLive={isRecording} activePoll={null} />
