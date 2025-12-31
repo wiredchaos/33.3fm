@@ -11,6 +11,8 @@ export default function ElevatorNav({ isOpen, onClose }) {
   const [selectedFloor, setSelectedFloor] = useState(null);
 
   const floors = [
+    { name: 'Store', page: 'Store', icon: Radio, level: 6, color: 0x9333ea },
+    { name: 'Subscription', page: 'Subscription', icon: Radio, level: 5, color: 0xec4899 },
     { name: 'Broadcast Portal', page: 'BroadcastPortal', icon: Radio, level: 4, color: 0xff0000 },
     { name: 'Recording Studio', page: 'RecordingStudio', icon: Music, level: 3, color: 0x84cc16 },
     { name: 'Podcast Booth', page: 'PodcastBooth', icon: Mic, level: 2, color: 0x00ffff },

@@ -8,6 +8,7 @@ import LiveChat from '@/components/chat/LiveChat';
 import DJRedFang from '@/components/dj/DJRedFang';
 import MusicVisualizer from '@/components/audio/MusicVisualizer';
 import ElevatorNav from '@/components/navigation/ElevatorNav';
+import WatermarkRemoval from '@/components/monetization/WatermarkRemoval';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
@@ -15,8 +16,23 @@ export default function RecordingStudio() {
   const [isSaving, setIsSaving] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [showElevator, setShowElevator] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(null);
+  const [hasWatermarkRemoval, setHasWatermarkRemoval] = useState(false);
+
+  useEffect(() => {
+    const checkWatermark = async () => {
+      try {
+        const user = await base44.auth.me();
+        const purchases = await base44.entities.Purchase.filter({ 
+          user_email: user.email,
+          item_name: 'Watermark Removal'
+        });
+        setHasWatermarkRemoval(purchases.length > 0);
+      } catch (error) {
+        setHasWatermarkRemoval(false);
+      }
+    };
+    checkWatermark();
+  }, []);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -450,6 +466,50 @@ export default function RecordingStudio() {
     recordingLight.position.set(-3, 3.7, -1.5);
     scene.add(recordingLight);
 
+    // 33.3FM 3D Watermark - Octane render style
+    const watermarkGroup = new THREE.Group();
+    
+    // Create text using 3D shapes (simulating text)
+    const watermarkMaterial = new THREE.MeshStandardMaterial({
+      color: 0x00ffff,
+      emissive: 0x00ffff,
+      emissiveIntensity: 0.6,
+      transparent: true,
+      opacity: 0.4,
+      metalness: 0.8,
+      roughness: 0.2
+    });
+
+    // "33.3FM" as floating 3D elements
+    const textElements = [];
+    for (let i = 0; i < 5; i++) {
+      const element = new THREE.Mesh(
+        new THREE.BoxGeometry(0.15, 0.25, 0.05),
+        watermarkMaterial
+      );
+      element.position.set(-0.5 + i * 0.25, 0, 0);
+      textElements.push(element);
+      watermarkGroup.add(element);
+    }
+
+    // Octane-style glow ring around watermark
+    const glowRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.8, 0.02, 16, 100),
+      new THREE.MeshStandardMaterial({
+        color: 0x00ffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: 0.8,
+        transparent: true,
+        opacity: 0.3
+      })
+    );
+    watermarkGroup.add(glowRing);
+
+    watermarkGroup.position.set(0, 3.5, -4);
+    watermarkGroup.rotation.x = -0.3;
+    watermarkGroup.visible = !hasWatermarkRemoval; // Hide if user paid to remove
+    scene.add(watermarkGroup);
+
     // Realistic studio lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
@@ -541,6 +601,13 @@ export default function RecordingStudio() {
         light.intensity = 0.5 + Math.sin(time * 2 + i) * 0.2;
       });
 
+      // Watermark animation
+      watermarkGroup.rotation.y = time * 0.3;
+      textElements.forEach((el, i) => {
+        el.position.y = Math.sin(time * 2 + i * 0.5) * 0.1;
+      });
+      glowRing.rotation.z = time * 0.5;
+
       renderer.render(scene, camera);
     };
     animate();
@@ -594,6 +661,7 @@ export default function RecordingStudio() {
             <div className="text-xs uppercase tracking-widest text-white/40">
               Recording Studio
             </div>
+            <WatermarkRemoval />
             <button
               onClick={() => setShowElevator(true)}
               className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2"
