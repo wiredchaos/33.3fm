@@ -153,6 +153,30 @@ export default function ArtistProfile() {
       scene.add(panel);
     }
     
+    // Fan Wall Monitor - Left Wall
+    const monitorScreen = new THREE.Mesh(
+      new THREE.PlaneGeometry(4, 3),
+      new THREE.MeshStandardMaterial({
+        color: 0x0a0a0a,
+        emissive: 0x00ffff,
+        emissiveIntensity: 0.2,
+        roughness: 0.1,
+        metalness: 0.8
+      })
+    );
+    monitorScreen.position.set(-6.9, 3, 0);
+    monitorScreen.rotation.y = Math.PI / 2;
+    scene.add(monitorScreen);
+
+    // Monitor Frame
+    const monitorFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(4.2, 3.2, 0.1),
+      frameMaterial
+    );
+    monitorFrame.position.set(-6.85, 3, 0);
+    monitorFrame.rotation.y = Math.PI / 2;
+    scene.add(monitorFrame);
+
     // Side walls with minimal art
     for (let side = 0; side < 2; side++) {
       const wall = new THREE.Mesh(
@@ -236,6 +260,9 @@ export default function ArtistProfile() {
       linkPanels.forEach((panel, i) => {
         panel.position.z = -4.9 + Math.sin(time * 0.6 + i * 0.8) * 0.02;
       });
+
+      // Fan Wall Monitor pulse
+      monitorScreen.material.emissiveIntensity = 0.2 + Math.sin(time * 4) * 0.05;
 
 
 
@@ -399,6 +426,16 @@ export default function ArtistProfile() {
               >
                 Upgrade to Broadcast Portal
               </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Left - Fan Wall Monitor Label */}
+        <div className="absolute bottom-20 left-8 pointer-events-auto">
+          <div className="backdrop-blur-xl bg-black/60 border border-cyan-400/30 rounded-xl px-4 py-2">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              <span className="text-cyan-400 text-xs uppercase tracking-wider">Live Fan Wall</span>
             </div>
           </div>
         </div>
