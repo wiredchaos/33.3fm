@@ -11,6 +11,8 @@ import ElevatorNav from '@/components/navigation/ElevatorNav';
 import WatermarkRemoval from '@/components/monetization/WatermarkRemoval';
 import Jukebox from '@/components/media/Jukebox';
 import ChangeMachine from '@/components/monetization/ChangeMachine';
+import ThreeDKeyboard from '@/components/interactive/3DKeyboard';
+import MultiplayerChat from '@/components/social/MultiplayerChat';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
@@ -738,7 +740,7 @@ export default function RecordingStudio() {
         <DJRedFang context={isRecording ? 'recording' : 'greeting'} currentGenre="electronic" chatSentiment="focused" />
 
         {/* Spotify Live Embed */}
-        <div className="absolute top-24 left-6 pointer-events-auto">
+        <div className="absolute top-24 left-6 pointer-events-auto space-y-4">
           <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-4 w-80">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm uppercase tracking-wider text-white/60">33.3FM LIVE</h3>
@@ -754,15 +756,18 @@ export default function RecordingStudio() {
               loading="lazy"
             />
           </div>
+          <ThreeDKeyboard onNotePlay={(note) => console.log('Note played:', note)} />
+        </div>
+
+        {/* Social Features */}
+        <div className="fixed top-24 right-6 z-30 w-96 pointer-events-auto space-y-4">
+          <MultiplayerChat room="studio" />
         </div>
 
         {/* Jukebox */}
         <div className="fixed bottom-24 right-6 z-30 w-96 pointer-events-auto">
           <Jukebox isLive={isRecording} />
         </div>
-
-        {/* Live Chat */}
-        <LiveChat isLive={isRecording} activePoll={null} />
 
         {/* Environment Info */}
         <div className="absolute bottom-0 left-0 right-0 p-6">
