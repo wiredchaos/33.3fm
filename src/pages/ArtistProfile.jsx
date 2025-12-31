@@ -3,15 +3,20 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import * as THREE from 'three';
-import { ArrowLeft, User, ArrowUpRight, Plus } from 'lucide-react';
+import { ArrowLeft, User, ArrowUpRight, Plus, Package, Eye } from 'lucide-react';
 import SocialAuth from '@/components/auth/SocialAuth';
 import FollowButton from '@/components/social/FollowButton';
 import FanInteractions from '@/components/social/FanInteractions';
+import PhygitalManager from '@/components/phygital/PhygitalManager';
+import VirtualTryOn from '@/components/phygital/VirtualTryOn';
 
 export default function ArtistProfile() {
   const canvasRef = useRef(null);
   const [user, setUser] = useState(null);
   const [showSocialAuth, setShowSocialAuth] = useState(false);
+  const [showPhygital, setShowPhygital] = useState(false);
+  const [showTryOn, setShowTryOn] = useState(false);
+  const [phygitalItems, setPhygitalItems] = useState([]);
 
   useEffect(() => {
     loadUser();
@@ -27,211 +32,237 @@ export default function ArtistProfile() {
   };
 
   useEffect(() => {
+    const loadPhygitalItems = async () => {
+      try {
+        const currentUser = await base44.auth.me();
+        const items = await base44.entities.PhygitalItem.filter({ user_email: currentUser.email });
+        setPhygitalItems(items);
+      } catch (error) {
+        console.error('Failed to load phygital items');
+      }
+    };
+    loadPhygitalItems();
+  }, []);
+
+  useEffect(() => {
     if (!canvasRef.current) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0a0a);
+    scene.background = new THREE.Color(0x000000);
+    scene.fog = new THREE.Fog(0x000000, 8, 25);
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 8);
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 10);
 
-    const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas: canvasRef.current, 
+      antialias: true,
+      alpha: true 
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // Gallery Materials - Clean iOS Aesthetic
-    const whiteMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf5f5f5,
-      roughness: 0.2,
-      metalness: 0.1,
+    // Premium Materials
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x88ccff,
+      transmission: 0.95,
+      opacity: 0.1,
+      metalness: 0,
+      roughness: 0.05,
+      thickness: 0.5,
+      envMapIntensity: 1.5,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1
     });
 
-    const frameMaterial = new THREE.MeshStandardMaterial({
-      color: 0xe0e0e0,
-      roughness: 0.3,
-      metalness: 0.2,
-    });
-
-    const accentMaterial = new THREE.MeshStandardMaterial({
+    const metalMaterial = new THREE.MeshStandardMaterial({
       color: 0x00ffff,
       emissive: 0x00ffff,
-      emissiveIntensity: 0.4,
-      roughness: 0.2,
-      metalness: 0.8,
+      emissiveIntensity: 0.5,
+      roughness: 0.1,
+      metalness: 1
     });
 
     const floorMaterial = new THREE.MeshStandardMaterial({
-      color: 0xcccccc,
-      roughness: 0.1,
-      metalness: 0.3,
+      color: 0x0a0a0a,
+      roughness: 0.2,
+      metalness: 0.8
     });
 
-    // Gallery space - iOS clean aesthetic
-    const galleryFloor = new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 20),
-      floorMaterial
-    );
-    galleryFloor.rotation.x = -Math.PI / 2;
-    galleryFloor.position.y = 0;
-    scene.add(galleryFloor);
-    
-    const galleryCeiling = new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 20),
-      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, side: THREE.DoubleSide })
-    );
-    galleryCeiling.rotation.x = -Math.PI / 2;
-    galleryCeiling.position.y = 6;
-    scene.add(galleryCeiling);
-    
-    // Main feature wall - white
-    const mainWall = new THREE.Mesh(
-      new THREE.PlaneGeometry(12, 6),
-      whiteMaterial
-    );
-    mainWall.position.set(0, 3, -5);
-    scene.add(mainWall);
-    
-    // Avatar pedestal - gallery style
+    // Futuristic floor with grid
+    const floorGeometry = new THREE.PlaneGeometry(40, 40, 40, 40);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Grid overlay
+    const gridHelper = new THREE.GridHelper(40, 40, 0x00ffff, 0x00ffff);
+    gridHelper.material.opacity = 0.1;
+    gridHelper.material.transparent = true;
+    scene.add(gridHelper);
+
+    // Central holographic platform
+    const platformGeometry = new THREE.CylinderGeometry(3, 3.5, 0.3, 8);
+    const platform = new THREE.Mesh(platformGeometry, metalMaterial);
+    platform.position.y = 0.15;
+    platform.castShadow = true;
+    scene.add(platform);
+
+    // Holographic rings around platform
+    for (let i = 0; i < 3; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(2.5 + i * 0.5, 0.05, 8, 64),
+        new THREE.MeshBasicMaterial({
+          color: 0x00ffff,
+          transparent: true,
+          opacity: 0.4 - i * 0.1
+        })
+      );
+      ring.position.y = 0.3 + i * 0.2;
+      ring.rotation.x = Math.PI / 2;
+      scene.add(ring);
+    }
+
+    // Avatar pedestal - premium crystal
     const pedestal = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.6, 0.7, 1.5, 32),
-      whiteMaterial
+      new THREE.CylinderGeometry(0.8, 1, 2, 8),
+      glassMaterial
     );
-    pedestal.position.set(0, 0.75, -2);
+    pedestal.position.set(0, 1, 0);
+    pedestal.castShadow = true;
     scene.add(pedestal);
-    
-    // Artist avatar sphere - modern sculpture
+
+    // Floating avatar sphere - high-end
     const avatarSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.7, 64, 64),
-      new THREE.MeshStandardMaterial({
+      new THREE.IcosahedronGeometry(1, 2),
+      new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
+        transmission: 0.9,
+        opacity: 0.8,
+        metalness: 0.1,
         roughness: 0.05,
-        metalness: 0.95,
+        clearcoat: 1
       })
     );
-    avatarSphere.position.set(0, 2.2, -2);
+    avatarSphere.position.set(0, 3, 0);
+    avatarSphere.castShadow = true;
     scene.add(avatarSphere);
-    
-    // Accent ring around avatar
-    const accentRing = new THREE.Mesh(
-      new THREE.TorusGeometry(0.8, 0.04, 16, 64),
-      accentMaterial
-    );
-    accentRing.position.copy(avatarSphere.position);
-    accentRing.rotation.x = Math.PI / 2;
-    scene.add(accentRing);
-    
-    // Link display panels - minimalist frames
-    const linkPanels = [];
-    for (let i = 0; i < 4; i++) {
-      const panel = new THREE.Group();
-      
-      // Panel backing
-      const back = new THREE.Mesh(
-        new THREE.BoxGeometry(3.5, 0.65, 0.08),
-        whiteMaterial
-      );
-      panel.add(back);
-      
-      // Panel frame
-      const frame = new THREE.Mesh(
-        new THREE.BoxGeometry(3.6, 0.7, 0.06),
-        frameMaterial
-      );
-      frame.position.z = -0.05;
-      panel.add(frame);
-      
-      // Accent line
-      const accent = new THREE.Mesh(
-        new THREE.BoxGeometry(3.5, 0.02, 0.01),
-        accentMaterial
-      );
-      accent.position.set(0, -0.3, 0.05);
-      panel.add(accent);
-      
-      panel.position.set(-4 + (i % 2) * 8, 3.5 - Math.floor(i / 2) * 1.2, -4.9);
-      linkPanels.push(panel);
-      scene.add(panel);
-    }
-    
-    // Fan Wall Monitor - Left Wall
-    const monitorScreen = new THREE.Mesh(
-      new THREE.PlaneGeometry(4, 3),
-      new THREE.MeshStandardMaterial({
-        color: 0x0a0a0a,
-        emissive: 0x00ffff,
-        emissiveIntensity: 0.2,
-        roughness: 0.1,
-        metalness: 0.8
+
+    // Energy core inside avatar
+    const core = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 32, 32),
+      new THREE.MeshBasicMaterial({
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.8
       })
     );
-    monitorScreen.position.set(-6.9, 3, 0);
-    monitorScreen.rotation.y = Math.PI / 2;
-    scene.add(monitorScreen);
+    core.position.copy(avatarSphere.position);
+    scene.add(core);
 
-    // Monitor Frame
-    const monitorFrame = new THREE.Mesh(
-      new THREE.BoxGeometry(4.2, 3.2, 0.1),
-      frameMaterial
-    );
-    monitorFrame.position.set(-6.85, 3, 0);
-    monitorFrame.rotation.y = Math.PI / 2;
-    scene.add(monitorFrame);
+    // Phygital item display pedestals
+    const phygitalPedestals = [];
+    const phygitalItems = [];
+    const itemPositions = [
+      { x: -4, z: -2 },
+      { x: 4, z: -2 },
+      { x: -4, z: 2 },
+      { x: 4, z: 2 }
+    ];
 
-    // Side walls with minimal art
-    for (let side = 0; side < 2; side++) {
-      const wall = new THREE.Mesh(
-        new THREE.PlaneGeometry(10, 6),
-        whiteMaterial
+    itemPositions.forEach((pos, i) => {
+      const itemPedestal = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.6, 1.5, 8),
+        glassMaterial
       );
-      wall.position.set(side === 0 ? -7 : 7, 3, 0);
-      wall.rotation.y = side === 0 ? Math.PI / 2 : -Math.PI / 2;
-      scene.add(wall);
+      itemPedestal.position.set(pos.x, 0.75, pos.z);
+      itemPedestal.castShadow = true;
+      scene.add(itemPedestal);
+      phygitalPedestals.push(itemPedestal);
+
+      // Floating item placeholder
+      const item = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.8, 0.8),
+        new THREE.MeshPhysicalMaterial({
+          color: 0xff00ff,
+          emissive: 0xff00ff,
+          emissiveIntensity: 0.3,
+          transparent: true,
+          opacity: 0.7,
+          metalness: 0.8,
+          roughness: 0.2
+        })
+      );
+      item.position.set(pos.x, 2.5, pos.z);
+      item.castShadow = true;
+      scene.add(item);
+      phygitalItems.push(item);
+
+      // Item glow ring
+      const glow = new THREE.Mesh(
+        new THREE.TorusGeometry(0.6, 0.03, 8, 32),
+        new THREE.MeshBasicMaterial({ color: 0xff00ff })
+      );
+      glow.position.copy(item.position);
+      glow.rotation.x = Math.PI / 2;
+      scene.add(glow);
+    });
+
+    // Holographic info panels
+    const infoPanels = [];
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2;
+      const radius = 6;
       
-      // Art pieces on side walls
-      for (let i = 0; i < 2; i++) {
-        const artFrame = new THREE.Mesh(
-          new THREE.BoxGeometry(1.5, 1.2, 0.1),
-          frameMaterial
-        );
-        artFrame.position.set(
-          side === 0 ? -6.9 : 6.9,
-          2.5 + i * 0.2,
-          -2 + i * 2
-        );
-        artFrame.rotation.y = side === 0 ? Math.PI / 2 : -Math.PI / 2;
-        scene.add(artFrame);
-      }
+      const panel = new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 1.2),
+        new THREE.MeshBasicMaterial({
+          color: 0x00ffff,
+          transparent: true,
+          opacity: 0.3,
+          side: THREE.DoubleSide
+        })
+      );
+      panel.position.set(
+        Math.sin(angle) * radius,
+        2,
+        Math.cos(angle) * radius
+      );
+      panel.lookAt(0, 2, 0);
+      scene.add(panel);
+      infoPanels.push(panel);
     }
 
-    // Gallery track lighting
-    for (let i = 0; i < 5; i++) {
-      const trackLight = new THREE.SpotLight(0xffffff, 1.8, 20, Math.PI / 8, 0.3);
-      trackLight.position.set(-4 + i * 2, 5.8, 0);
-      trackLight.target.position.set(-4 + i * 2, 0, 0);
-      trackLight.castShadow = true;
-      scene.add(trackLight);
-      scene.add(trackLight.target);
-    }
-    
-    // Avatar spotlight
-    const avatarSpot = new THREE.SpotLight(0xffffff, 2.5, 15, Math.PI / 6, 0.2);
-    avatarSpot.position.set(0, 5.5, -1);
-    avatarSpot.target.position.set(0, 2.2, -2);
-    scene.add(avatarSpot);
-    scene.add(avatarSpot.target);
-    
-    // Accent lighting
-    const accentLight = new THREE.PointLight(0x00ffff, 0.8, 10);
-    accentLight.position.set(0, 2.2, -1);
-    scene.add(accentLight);
-
-    // Ambient gallery lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // Dynamic lighting system
+    const ambientLight = new THREE.AmbientLight(0x222244, 0.4);
     scene.add(ambientLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    fillLight.position.set(-5, 4, 5);
-    scene.add(fillLight);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    mainLight.position.set(5, 10, 5);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.width = 2048;
+    mainLight.shadow.mapSize.height = 2048;
+    scene.add(mainLight);
+
+    const cyanLight = new THREE.PointLight(0x00ffff, 2, 20);
+    cyanLight.position.set(0, 5, 0);
+    scene.add(cyanLight);
+
+    const purpleLight = new THREE.PointLight(0xff00ff, 1.5, 15);
+    purpleLight.position.set(-5, 3, 5);
+    scene.add(purpleLight);
+
+    // Spotlights on items
+    phygitalItems.forEach((item) => {
+      const spotlight = new THREE.SpotLight(0xff00ff, 1, 10, Math.PI / 6);
+      spotlight.position.set(item.position.x, 6, item.position.z);
+      spotlight.target = item;
+      spotlight.castShadow = true;
+      scene.add(spotlight);
+    });
 
 
 
@@ -241,28 +272,38 @@ export default function ArtistProfile() {
       requestAnimationFrame(animate);
       time += 0.01;
 
-      // Minimal parallax
-      const mouseX = 0;
-      const mouseY = 0;
-      camera.position.x = mouseX * 0.3;
-      camera.position.y = mouseY * 0.3;
-      camera.lookAt(0, 0, 0);
+      // Cinematic camera orbit
+      camera.position.x = Math.sin(time * 0.1) * 12;
+      camera.position.z = Math.cos(time * 0.1) * 12;
+      camera.position.y = 3 + Math.sin(time * 0.05) * 1;
+      camera.lookAt(0, 2, 0);
 
-      // Avatar sphere rotation
-      avatarSphere.rotation.y = time * 0.3;
-      avatarSphere.rotation.x = Math.sin(time * 0.2) * 0.1;
-      
-      // Accent ring pulse
-      accentRing.scale.setScalar(1 + Math.sin(time * 2) * 0.03);
-      accentMaterial.emissiveIntensity = 0.4 + Math.sin(time * 3) * 0.1;
+      // Avatar sphere - complex rotation
+      avatarSphere.rotation.y = time * 0.5;
+      avatarSphere.rotation.x = Math.sin(time * 0.3) * 0.2;
+      avatarSphere.position.y = 3 + Math.sin(time * 2) * 0.1;
 
-      // Link panels subtle depth
-      linkPanels.forEach((panel, i) => {
-        panel.position.z = -4.9 + Math.sin(time * 0.6 + i * 0.8) * 0.02;
+      // Core pulse
+      core.scale.setScalar(1 + Math.sin(time * 4) * 0.2);
+      core.material.opacity = 0.6 + Math.sin(time * 3) * 0.3;
+
+      // Platform rotation
+      platform.rotation.y = time * 0.2;
+
+      // Phygital items animation
+      phygitalItems.forEach((item, i) => {
+        item.rotation.y = time * 0.8 + i;
+        item.position.y = 2.5 + Math.sin(time * 3 + i) * 0.15;
       });
 
-      // Fan Wall Monitor pulse
-      monitorScreen.material.emissiveIntensity = 0.2 + Math.sin(time * 4) * 0.05;
+      // Info panels fade
+      infoPanels.forEach((panel, i) => {
+        panel.material.opacity = 0.2 + Math.sin(time * 2 + i) * 0.1;
+      });
+
+      // Dynamic lighting
+      cyanLight.intensity = 1.8 + Math.sin(time * 2) * 0.4;
+      purpleLight.intensity = 1.3 + Math.cos(time * 2.5) * 0.3;
 
 
 
@@ -401,6 +442,29 @@ export default function ArtistProfile() {
               ))}
             </div>
 
+            {/* Phygital Collection Button */}
+            <div className="mb-4 flex gap-3 justify-center">
+              <button
+                onClick={() => setShowPhygital(true)}
+                className="backdrop-blur-md bg-gradient-to-r from-cyan-400/20 to-purple-600/20 border border-cyan-400/30 rounded-xl px-6 py-3 hover:from-cyan-400/30 hover:to-purple-600/30 transition-all flex items-center gap-2"
+              >
+                <Package className="w-4 h-4 text-cyan-400" />
+                <span className="text-white font-medium">Phygital Items</span>
+                {phygitalItems.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-400 text-black text-xs font-bold">
+                    {phygitalItems.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setShowTryOn(true)}
+                className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl px-6 py-3 hover:bg-white/10 transition-all flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4 text-white/60" />
+                <span className="text-white/80 font-medium">Virtual Try-On</span>
+              </button>
+            </div>
+
             {/* Fan Interactions - Optimized Layout */}
             <div className="mb-6 mx-auto" style={{ maxWidth: '28rem' }}>
               <FanInteractions 
@@ -483,6 +547,38 @@ export default function ArtistProfile() {
               ×
             </button>
             <SocialAuth onSuccess={() => { setShowSocialAuth(false); loadUser(); }} />
+          </div>
+        </div>
+      )}
+
+      {/* Phygital Manager Modal */}
+      {showPhygital && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm px-4 overflow-y-auto py-8">
+          <div className="relative max-w-4xl w-full">
+            <button
+              onClick={() => setShowPhygital(false)}
+              className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white z-10"
+            >
+              ×
+            </button>
+            <PhygitalManager onItemAdded={(item) => {
+              setPhygitalItems([...phygitalItems, item]);
+            }} />
+          </div>
+        </div>
+      )}
+
+      {/* Virtual Try-On Modal */}
+      {showTryOn && phygitalItems.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm px-4">
+          <div className="relative">
+            <button
+              onClick={() => setShowTryOn(false)}
+              className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white z-10"
+            >
+              ×
+            </button>
+            <VirtualTryOn itemId={phygitalItems[0]?.id} />
           </div>
         </div>
       )}
