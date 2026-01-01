@@ -4,11 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Package, Link2, Sparkles, Scan, ExternalLink, Eye } from 'lucide-react';
+import { Package, Link2, Sparkles, Scan, ExternalLink, Eye, Globe } from 'lucide-react';
+import NFTCollectionImporter from '@/components/museum/NFTCollectionImporter';
 
 export default function PhygitalManager({ onItemAdded }) {
   const queryClient = useQueryClient();
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [showImporter, setShowImporter] = useState(false);
   const [newItem, setNewItem] = useState({
     item_name: '',
     item_type: 'merch',
@@ -69,14 +71,38 @@ export default function PhygitalManager({ onItemAdded }) {
             <p className="text-sm text-white/60">Link physical items to your 3D space</p>
           </div>
         </div>
-        <Button
-          onClick={() => setIsAddingItem(!isAddingItem)}
-          className="bg-gradient-to-r from-cyan-400 to-purple-600 hover:from-cyan-500 hover:to-purple-700 text-white"
-        >
-          <Link2 className="w-4 h-4 mr-2" />
-          Link Item
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowImporter(!showImporter)}
+            className="bg-white/10 hover:bg-white/20 border border-cyan-400/30 text-white"
+          >
+            <Globe className="w-4 h-4 mr-2" />
+            Import NFTs
+          </Button>
+          <Button
+            onClick={() => setIsAddingItem(!isAddingItem)}
+            className="bg-gradient-to-r from-cyan-400 to-purple-600 hover:from-cyan-500 hover:to-purple-700 text-white"
+          >
+            <Link2 className="w-4 h-4 mr-2" />
+            Link Item
+          </Button>
+        </div>
       </div>
+
+      {/* NFT Collection Importer */}
+      {showImporter && (
+        <div className="mb-4">
+          <NFTCollectionImporter 
+            onImportComplete={(newItems) => {
+              queryClient.invalidateQueries({ queryKey: ['phygitalItems'] });
+              setShowImporter(false);
+              if (onItemAdded && newItems.length > 0) {
+                newItems.forEach(item => onItemAdded(item));
+              }
+            }}
+          />
+        </div>
+      )}
 
       {/* Add Item Form */}
       {isAddingItem && (
