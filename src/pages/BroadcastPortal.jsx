@@ -19,6 +19,9 @@ export default function BroadcastPortal() {
   const [showMediaPanel, setShowMediaPanel] = useState(false);
   const [mediaType, setMediaType] = useState('upload');
   const [showElevator, setShowElevator] = useState(false);
+  const [panelsActive, setPanelsActive] = useState([false, false, false]);
+  const [panelBrightness, setPanelBrightness] = useState(0.3);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -111,10 +114,20 @@ export default function BroadcastPortal() {
       { x: 6, y: 4, z: -8, width: 4, height: 5 }
     ];
 
-    panelPositions.forEach(pos => {
+    panelPositions.forEach((pos, i) => {
+      const panelMat = panelsActive[i] 
+        ? new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            emissive: 0x00ffff,
+            emissiveIntensity: panelBrightness,
+            transparent: true,
+            opacity: 0.2,
+          })
+        : mediaPanelOff.clone();
+      
       const panel = new THREE.Mesh(
         new THREE.BoxGeometry(pos.width, pos.height, 0.2),
-        mediaPanelOff.clone()
+        panelMat
       );
       panel.position.set(pos.x, pos.y, pos.z);
       mediaPanels.push(panel);
@@ -194,7 +207,7 @@ export default function BroadcastPortal() {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isLive]);
+  }, [isLive, panelsActive, panelBrightness]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
@@ -208,6 +221,66 @@ export default function BroadcastPortal() {
           </Link>
 
           <div className="flex items-center gap-3">
+            {/* Media Panel Controls */}
+            <div className="relative group">
+              <button className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2">
+                📺 Panels
+              </button>
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block backdrop-blur-xl bg-black/80 border border-cyan-400/30 rounded-xl p-3 w-56 space-y-2">
+                <div className="text-xs text-white/60 mb-2">Panel Controls</div>
+                {[0, 1, 2].map(i => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      const newActive = [...panelsActive];
+                      newActive[i] = !newActive[i];
+                      setPanelsActive(newActive);
+                    }}
+                    className={`w-full px-3 py-1.5 rounded-lg text-xs transition-all ${panelsActive[i] ? 'bg-cyan-400/20 text-cyan-400' : 'text-white/60 hover:bg-white/10'}`}
+                  >
+                    Panel {i + 1}: {panelsActive[i] ? 'ON' : 'OFF'}
+                  </button>
+                ))}
+                <div className="pt-2 border-t border-white/10">
+                  <div className="text-xs text-white/60 mb-2">Brightness</div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={panelBrightness}
+                    onChange={(e) => setPanelBrightness(parseFloat(e.target.value))}
+                    className="w-full accent-cyan-400"
+                  />
+                  <div className="text-xs text-cyan-400 mt-1">{Math.round(panelBrightness * 100)}%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Slide Cycler */}
+            <div className="relative group">
+              <button className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2">
+                🎞️ Slide {currentSlide + 1}
+              </button>
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block backdrop-blur-xl bg-black/80 border border-cyan-400/30 rounded-xl p-3 space-y-1">
+                <button
+                  onClick={() => setCurrentSlide((currentSlide - 1 + 5) % 5)}
+                  className="w-full px-3 py-1.5 rounded-lg text-xs text-white/60 hover:bg-white/10 transition-all"
+                >
+                  ← Previous
+                </button>
+                <button
+                  onClick={() => setCurrentSlide((currentSlide + 1) % 5)}
+                  className="w-full px-3 py-1.5 rounded-lg text-xs text-white/60 hover:bg-white/10 transition-all"
+                >
+                  Next →
+                </button>
+                <div className="pt-2 border-t border-white/10 text-xs text-cyan-400">
+                  Slide {currentSlide + 1} / 5
+                </div>
+              </div>
+            </div>
+
             <button onClick={() => setShowElevator(true)} className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2">
               <Layers className="w-4 h-4" />
               Elevator
