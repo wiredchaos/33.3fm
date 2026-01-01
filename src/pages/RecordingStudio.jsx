@@ -32,6 +32,8 @@ export default function RecordingStudio() {
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [bottomPanelCollapsed, setBottomPanelCollapsed] = useState(false);
+  const [lightingMode, setLightingMode] = useState('warm'); // 'warm', 'cool', 'neon'
+  const [monitorBrightness, setMonitorBrightness] = useState(0.3);
 
   useEffect(() => {
     const checkWatermark = async () => {
@@ -448,7 +450,13 @@ export default function RecordingStudio() {
       
       const screen = new THREE.Mesh(
         new THREE.BoxGeometry(0.7, 0.5, 0.05),
-        screenMaterial
+        new THREE.MeshStandardMaterial({
+          color: 0x0a0a0a,
+          emissive: 0x00ffff,
+          emissiveIntensity: monitorBrightness,
+          roughness: 0.2,
+          metalness: 0.7,
+        })
       );
       screen.position.set(-0.6 + (i * 1.2), 1.6, -0.7);
       mixingConsole.add(screen);
@@ -563,17 +571,26 @@ export default function RecordingStudio() {
     watermarkGroup.visible = !hasWatermarkRemoval; // Hide if user paid to remove
     scene.add(watermarkGroup);
 
-    // Realistic studio lighting
+    // Realistic studio lighting - dynamic based on mode
+    const getLightColor = () => {
+      switch(lightingMode) {
+        case 'warm': return 0xffe8d6;
+        case 'cool': return 0xd6e8ff;
+        case 'neon': return 0xff00ff;
+        default: return 0xffe8d6;
+      }
+    };
+
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
     // Main ceiling lights
-    const ceilingLight1 = new THREE.SpotLight(0xffe8d6, 1.2, 20, Math.PI / 6, 0.3);
+    const ceilingLight1 = new THREE.SpotLight(getLightColor(), 1.2, 20, Math.PI / 6, 0.3);
     ceilingLight1.position.set(-3, 3.8, 0);
     ceilingLight1.castShadow = true;
     scene.add(ceilingLight1);
 
-    const ceilingLight2 = new THREE.SpotLight(0xffe8d6, 1.2, 20, Math.PI / 6, 0.3);
+    const ceilingLight2 = new THREE.SpotLight(getLightColor(), 1.2, 20, Math.PI / 6, 0.3);
     ceilingLight2.position.set(3, 3.8, 0);
     ceilingLight2.castShadow = true;
     scene.add(ceilingLight2);
@@ -682,7 +699,7 @@ export default function RecordingStudio() {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
     };
-  }, [isRecording, isSaving, isVocalRecording]);
+  }, [isRecording, isSaving, isVocalRecording, lightingMode, monitorBrightness]);
 
   const handleSave = () => {
     setIsSaving(true);
@@ -735,6 +752,57 @@ export default function RecordingStudio() {
               <Layers className="w-4 h-4" />
               Elevator
             </button>
+            {/* Studio Lighting Control */}
+            <div className="relative group">
+              <button
+                className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2"
+              >
+                💡 {lightingMode}
+              </button>
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block backdrop-blur-xl bg-black/80 border border-cyan-400/30 rounded-xl p-2 space-y-1">
+                <button
+                  onClick={() => setLightingMode('warm')}
+                  className={`w-full px-3 py-1.5 rounded-lg text-xs transition-all ${lightingMode === 'warm' ? 'bg-orange-400/20 text-orange-400' : 'text-white/60 hover:bg-white/10'}`}
+                >
+                  Warm
+                </button>
+                <button
+                  onClick={() => setLightingMode('cool')}
+                  className={`w-full px-3 py-1.5 rounded-lg text-xs transition-all ${lightingMode === 'cool' ? 'bg-cyan-400/20 text-cyan-400' : 'text-white/60 hover:bg-white/10'}`}
+                >
+                  Cool
+                </button>
+                <button
+                  onClick={() => setLightingMode('neon')}
+                  className={`w-full px-3 py-1.5 rounded-lg text-xs transition-all ${lightingMode === 'neon' ? 'bg-purple-400/20 text-purple-400' : 'text-white/60 hover:bg-white/10'}`}
+                >
+                  Neon
+                </button>
+              </div>
+            </div>
+
+            {/* Monitor Brightness Control */}
+            <div className="relative group">
+              <button
+                className="px-3 py-2 rounded-full text-xs uppercase tracking-wider bg-white/10 text-white/60 hover:bg-white/20 transition-all flex items-center gap-2"
+              >
+                🖥️ Monitors
+              </button>
+              <div className="absolute top-full right-0 mt-2 hidden group-hover:block backdrop-blur-xl bg-black/80 border border-cyan-400/30 rounded-xl p-3 w-48">
+                <div className="text-xs text-white/60 mb-2">Brightness</div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={monitorBrightness}
+                  onChange={(e) => setMonitorBrightness(parseFloat(e.target.value))}
+                  className="w-full accent-cyan-400"
+                />
+                <div className="text-xs text-cyan-400 mt-1">{Math.round(monitorBrightness * 100)}%</div>
+              </div>
+            </div>
+
             <button
               onClick={() => setIsRecording(!isRecording)}
               className={`px-4 py-2 rounded-full text-xs uppercase tracking-wider transition-all ${
