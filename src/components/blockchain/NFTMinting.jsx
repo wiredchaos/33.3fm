@@ -165,7 +165,7 @@ export default function NFTMinting({ artistEmail }) {
           </div>
         </div>
       )}
-    </div>
+      </div>
     </>
   );
 }
