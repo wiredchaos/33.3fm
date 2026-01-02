@@ -137,6 +137,90 @@ export default function ArtistProfile() {
       scene.add(ring);
     }
 
+    // Professional Desk/Console - Central Workstation
+    const deskTop = new THREE.Mesh(
+      new THREE.BoxGeometry(6, 0.15, 2.5),
+      new THREE.MeshStandardMaterial({
+        color: 0x0a0a0a,
+        metalness: 0.8,
+        roughness: 0.2
+      })
+    );
+    deskTop.position.set(0, 1.2, -2);
+    deskTop.castShadow = true;
+    scene.add(deskTop);
+
+    // Desk Legs
+    const legMaterial = new THREE.MeshStandardMaterial({
+      color: 0x1a1a1a,
+      metalness: 0.9,
+      roughness: 0.1
+    });
+
+    [-2.5, 2.5].forEach(x => {
+      const leg = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 1.2, 0.1),
+        legMaterial
+      );
+      leg.position.set(x, 0.6, -2);
+      scene.add(leg);
+    });
+
+    // Dual Monitors Setup
+    const monitors = [];
+    [-1.2, 1.2].forEach((x, i) => {
+      // Monitor Stand
+      const stand = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.15, 0.2, 0.3, 16),
+        metalMaterial
+      );
+      stand.position.set(x, 1.5, -2);
+      scene.add(stand);
+
+      // Monitor Screen
+      const screen = new THREE.Mesh(
+        new THREE.BoxGeometry(1.4, 0.9, 0.08),
+        new THREE.MeshStandardMaterial({
+          color: 0x0a0a0a,
+          emissive: 0x00ffff,
+          emissiveIntensity: 0.4,
+          roughness: 0.1,
+          metalness: 0.8
+        })
+      );
+      screen.position.set(x, 2, -2);
+      screen.castShadow = true;
+      monitors.push(screen);
+      scene.add(screen);
+
+      // Monitor Frame
+      const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 1, 0.05),
+        new THREE.MeshStandardMaterial({
+          color: 0x1a1a1a,
+          metalness: 0.9,
+          roughness: 0.1
+        })
+      );
+      frame.position.set(x, 2, -2.05);
+      scene.add(frame);
+    });
+
+    // Cyan Neon Edge Lights on Desk
+    const deskLightGeometry = new THREE.BoxGeometry(6.05, 0.02, 2.55);
+    const deskLight = new THREE.Mesh(
+      deskLightGeometry,
+      new THREE.MeshStandardMaterial({
+        color: 0x00ffff,
+        emissive: 0x00ffff,
+        emissiveIntensity: 0.6,
+        transparent: true,
+        opacity: 0.8
+      })
+    );
+    deskLight.position.set(0, 1.275, -2);
+    scene.add(deskLight);
+
     // Avatar pedestal - premium crystal
     const pedestal = new THREE.Mesh(
       new THREE.CylinderGeometry(0.8, 1, 2, 8),
@@ -145,6 +229,48 @@ export default function ArtistProfile() {
     pedestal.position.set(0, 1, 0);
     pedestal.castShadow = true;
     scene.add(pedestal);
+
+    // "33.3FM DOGECHAIN" 3D Neon Sign - Red & Cyan
+    const createNeonText = (text, position, color, emissiveIntensity) => {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = 1024;
+      canvas.height = 256;
+
+      context.fillStyle = 'black';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Neon glow effect
+      context.shadowColor = color;
+      context.shadowBlur = 40;
+      context.fillStyle = color;
+      context.font = 'bold 120px Arial';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const material = new THREE.MeshStandardMaterial({
+        map: texture,
+        emissive: new THREE.Color(color),
+        emissiveIntensity: emissiveIntensity,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+
+      const geometry = new THREE.PlaneGeometry(8, 2);
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.copy(position);
+      return mesh;
+    };
+
+    // Main "33.3FM" sign in Cyan
+    const mainSign = createNeonText('33.3FM', new THREE.Vector3(0, 5.5, -8), '#00ffff', 1.2);
+    scene.add(mainSign);
+
+    // "DOGECHAIN" subtitle in Red
+    const subSign = createNeonText('DOGECHAIN', new THREE.Vector3(0, 4, -8), '#ff0066', 0.9);
+    scene.add(subSign);
 
     // Floating avatar sphere - high-end
     const avatarSphere = new THREE.Mesh(
@@ -325,6 +451,18 @@ export default function ArtistProfile() {
       // Dynamic lighting
       cyanLight.intensity = 1.8 + Math.sin(time * 2) * 0.4;
       purpleLight.intensity = 1.3 + Math.cos(time * 2.5) * 0.3;
+
+      // Animate monitors
+      monitors.forEach((monitor, i) => {
+        monitor.material.emissiveIntensity = 0.4 + Math.sin(time * 2 + i) * 0.1;
+      });
+
+      // Animate neon signs
+      mainSign.material.emissiveIntensity = 1.2 + Math.sin(time * 3) * 0.2;
+      subSign.material.emissiveIntensity = 0.9 + Math.cos(time * 2.5) * 0.2;
+
+      // Desk light pulse
+      deskLight.material.emissiveIntensity = 0.6 + Math.sin(time * 4) * 0.1;
 
 
 
