@@ -2,19 +2,41 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Github, Twitter, Mail, Wallet } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import ProhibitedContentAcknowledgement from '@/components/legal/ProhibitedContentAcknowledgement';
 
 export default function SocialAuth({ onSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [showWarning, setShowWarning] = useState(true);
+  const [showLegalAck, setShowLegalAck] = useState(false);
+  const [pendingAuth, setPendingAuth] = useState(null);
 
   const handleSocialLogin = async (provider) => {
-    // DEMO ALERT: Explain OAuth limitation
+    // Check if user has already acknowledged legal terms
+    try {
+      const user = await base44.auth.me();
+      if (!user.legal_acknowledgement_accepted) {
+        // Show legal acknowledgement first
+        setPendingAuth({ type: 'social', provider });
+        setShowLegalAck(true);
+        return;
+      }
+    } catch (error) {
+      // User not logged in yet, show legal first
+      setPendingAuth({ type: 'social', provider });
+      setShowLegalAck(true);
+      return;
+    }
+
+    // Proceed with auth
+    proceedWithSocialLogin(provider);
+  };
+
+  const proceedWithSocialLogin = async (provider) => {
     alert(`⚠️ DEMO MODE\n\nSocial OAuth requires backend OAuth credentials to be configured.\n\nThis is a prototype showing the UI flow. For production:\n1. Configure OAuth apps on ${provider}\n2. Add credentials to backend\n3. Implement secure token exchange\n\nFor now, we'll simulate a successful connection.`);
     
     setIsLoading(true);
     try {
-      // Simulate OAuth response with demo profile data
       setTimeout(async () => {
         const mockProfileData = {
           twitter: { name: 'Demo Artist', username: '@demo_artist', bio: 'Electronic Music Producer', followers: 12500, avatar: 'https://i.pravatar.cc/150?img=33' },
@@ -31,6 +53,8 @@ export default function SocialAuth({ onSuccess }) {
           imported_bio: profileData.bio || user.imported_bio,
           imported_avatar: profileData.avatar || user.imported_avatar,
           imported_name: profileData.name || user.imported_name,
+          legal_acknowledgement_accepted: true,
+          legal_acknowledgement_date: new Date().toISOString()
         });
         
         if (onSuccess) onSuccess(profileData);
@@ -43,7 +67,35 @@ export default function SocialAuth({ onSuccess }) {
     }
   };
 
+  const handleLegalAccept = async () => {
+    setShowLegalAck(false);
+    if (pendingAuth?.type === 'social') {
+      proceedWithSocialLogin(pendingAuth.provider);
+    } else if (pendingAuth?.type === 'wallet') {
+      proceedWithWalletConnect();
+    }
+    setPendingAuth(null);
+  };
+
   const handleWalletConnect = async () => {
+    // Check if user has already acknowledged legal terms
+    try {
+      const user = await base44.auth.me();
+      if (!user.legal_acknowledgement_accepted) {
+        setPendingAuth({ type: 'wallet' });
+        setShowLegalAck(true);
+        return;
+      }
+    } catch (error) {
+      setPendingAuth({ type: 'wallet' });
+      setShowLegalAck(true);
+      return;
+    }
+
+    proceedWithWalletConnect();
+  };
+
+  const proceedWithWalletConnect = async () => {
     setIsLoading(true);
     try {
       if (typeof window.ethereum !== 'undefined') {
@@ -54,14 +106,15 @@ export default function SocialAuth({ onSuccess }) {
         const address = accounts[0];
         setWalletAddress(address);
 
-        // Fetch NFT metadata (read-only)
         const nftData = await fetchNFTProfile(address);
         
         const user = await base44.auth.me();
         await base44.auth.updateMe({
           wallet_address: address,
           nft_pfp: nftData?.image || null,
-          nft_metadata: nftData || null
+          nft_metadata: nftData || null,
+          legal_acknowledgement_accepted: true,
+          legal_acknowledgement_date: new Date().toISOString()
         });
 
         if (onSuccess) onSuccess({ wallet: address, nft: nftData });
@@ -95,7 +148,15 @@ export default function SocialAuth({ onSuccess }) {
   };
 
   return (
-    <div className="backdrop-blur-xl bg-black/80 border border-cyan-400/30 rounded-2xl p-6 w-full max-w-md">
+    <>
+      {showLegalAck && (
+        <ProhibitedContentAcknowledgement 
+          onAccept={handleLegalAccept}
+          context="signup"
+        />
+      )}
+      
+      <div className="backdrop-blur-xl bg-black/80 border border-cyan-400/30 rounded-2xl p-6 w-full max-w-md">
       {/* Demo Warning Banner */}
       {showWarning && (
         <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 animate-in fade-in duration-300">
@@ -182,5 +243,6 @@ export default function SocialAuth({ onSuccess }) {
         </div>
       </div>
     </div>
+    </>
   );
 }
