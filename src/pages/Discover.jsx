@@ -59,7 +59,27 @@ export default function Discover() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Black Liquid Motherboard Background with 3D Dynamic Vectors */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-cyan-950/5 to-black" />
+        <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="circuit" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+              <path d="M 0 100 L 50 100 L 50 50 L 100 50" stroke="cyan" strokeWidth="0.5" fill="none" opacity="0.3" />
+              <path d="M 100 50 L 150 50 L 150 100 L 200 100" stroke="cyan" strokeWidth="0.5" fill="none" opacity="0.3" />
+              <circle cx="50" cy="100" r="2" fill="cyan" opacity="0.6" />
+              <circle cx="100" cy="50" r="2" fill="cyan" opacity="0.6" />
+              <circle cx="150" cy="100" r="2" fill="cyan" opacity="0.6" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#circuit)" />
+        </svg>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+      </div>
+
+      <div className="relative z-10">
       {/* Header */}
       <div className="backdrop-blur-xl bg-black/60 border-b border-white/10 sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -151,7 +171,8 @@ export default function Discover() {
                       </div>
                       <span className="text-xs">{stream.genre}</span>
                     </div>
-                    <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white">
+                    <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white gap-2">
+                      <Radio className="w-3 h-3" />
                       Join Stream
                     </Button>
                   </div>
@@ -214,14 +235,21 @@ export default function Discover() {
                   className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 hover:border-purple-400/50 transition-all group cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400/20 to-transparent border border-purple-400/30 flex items-center justify-center">
-                        <Music className="w-5 h-5 text-purple-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-light">{release.track}</h3>
-                        <p className="text-sm text-white/60">{release.artist}</p>
-                      </div>
+                    <div className="flex items-center gap-4 flex-1">
+                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400/20 to-transparent border border-purple-400/30 flex items-center justify-center relative">
+                       <Music className="w-5 h-5 text-purple-400" />
+                       <button className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 hover:opacity-100 transition-opacity rounded-lg">
+                         <div className="w-6 h-6 rounded-full bg-purple-400 flex items-center justify-center">
+                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                             <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                           </svg>
+                         </div>
+                       </button>
+                     </div>
+                     <div>
+                       <h3 className="text-white font-light">{release.track}</h3>
+                       <p className="text-sm text-white/60">{release.artist}</p>
+                     </div>
                     </div>
                     <div className="text-xs text-white/40">{release.time}</div>
                   </div>
@@ -265,6 +293,7 @@ export default function Discover() {
             </div>
           </section>
         )}
+      </div>
       </div>
     </div>
   );

@@ -38,7 +38,27 @@ export default function FreeTier() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900/10 to-black p-8">
+    <div className="min-h-screen bg-black p-8 relative overflow-hidden">
+      {/* Black Liquid Motherboard Background with 3D Dynamic Vectors */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-cyan-950/5 to-black" />
+        <svg className="absolute inset-0 w-full h-full opacity-20" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="circuit-free" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+              <path d="M 0 100 L 50 100 L 50 50 L 100 50" stroke="cyan" strokeWidth="0.5" fill="none" opacity="0.3" />
+              <path d="M 100 50 L 150 50 L 150 100 L 200 100" stroke="cyan" strokeWidth="0.5" fill="none" opacity="0.3" />
+              <circle cx="50" cy="100" r="2" fill="cyan" opacity="0.6" />
+              <circle cx="100" cy="50" r="2" fill="cyan" opacity="0.6" />
+              <circle cx="150" cy="100" r="2" fill="cyan" opacity="0.6" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#circuit-free)" />
+        </svg>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}} />
+      </div>
+
+      <div className="relative z-10">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 animate-in fade-in duration-500">
@@ -141,6 +161,7 @@ export default function FreeTier() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

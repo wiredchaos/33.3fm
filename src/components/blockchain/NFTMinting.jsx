@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Image as ImageIcon, Music, Zap, Check } from 'lucide-react';
+import ProhibitedContentAcknowledgement from '@/components/legal/ProhibitedContentAcknowledgement';
 
 export default function NFTMinting({ artistEmail }) {
   const [mintData, setMintData] = useState({
@@ -14,10 +15,29 @@ export default function NFTMinting({ artistEmail }) {
   });
   const [isMinting, setIsMinting] = useState(false);
   const [mintedHash, setMintedHash] = useState('');
+  const [showLegalAck, setShowLegalAck] = useState(false);
+  const [pendingMint, setPendingMint] = useState(false);
 
   const mintNFT = async () => {
     if (!mintData.title || !mintData.file_url) return;
     
+    // Check legal acknowledgement
+    try {
+      const user = await base44.auth.me();
+      if (!user.legal_acknowledgement_minting) {
+        setPendingMint(true);
+        setShowLegalAck(true);
+        return;
+      }
+    } catch (error) {
+      alert('Please sign in to mint content');
+      return;
+    }
+
+    proceedWithMint();
+  };
+
+  const proceedWithMint = async () => {
     setIsMinting(true);
     try {
       // Simulate blockchain inscription
@@ -31,6 +51,13 @@ export default function NFTMinting({ artistEmail }) {
         });
       }
 
+      // Mark legal acknowledgement for minting
+      const user = await base44.auth.me();
+      await base44.auth.updateMe({
+        legal_acknowledgement_minting: true,
+        last_mint_date: new Date().toISOString()
+      });
+
       setMintedHash(hash);
       setMintData({ title: '', description: '', type: 'music', file_url: '' });
     } catch (error) {
@@ -40,8 +67,22 @@ export default function NFTMinting({ artistEmail }) {
     }
   };
 
+  const handleLegalAccept = () => {
+    setShowLegalAck(false);
+    setPendingMint(false);
+    proceedWithMint();
+  };
+
   return (
-    <div className="backdrop-blur-xl bg-black/60 border border-purple-500/30 rounded-2xl p-6 animate-in fade-in duration-300">
+    <>
+      {showLegalAck && (
+        <ProhibitedContentAcknowledgement 
+          onAccept={handleLegalAccept}
+          context="minting"
+        />
+      )}
+      
+      <div className="backdrop-blur-xl bg-black/60 border border-purple-500/30 rounded-2xl p-6 animate-in fade-in duration-300">
       <div className="flex items-center gap-3 mb-6">
         <Zap className="w-6 h-6 text-purple-400 animate-pulse" />
         <h2 className="text-2xl font-light text-white">NFT Minting</h2>
