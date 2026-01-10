@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import GestureControls from '@/components/gesture/GestureControls';
 import SessionHistory from '@/components/gesture/SessionHistory';
+import PerformanceReplay from '@/components/gesture/PerformanceReplay';
 
 export default function GestureStudio() {
   const canvasRef = useRef(null);
@@ -22,6 +23,8 @@ export default function GestureStudio() {
   const [currentHands, setCurrentHands] = useState({ left: null, right: null });
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showReplay, setShowReplay] = useState(false);
+  const [replaySessionId, setReplaySessionId] = useState(null);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -97,7 +100,6 @@ export default function GestureStudio() {
     const filter = audioCtx.createBiquadFilter();
     const delay = audioCtx.createDelay();
     const feedback = audioCtx.createGain();
-    const reverb = audioCtx.createConvolver();
 
     oscillator.type = 'sine';
     oscillator.frequency.value = 440;
@@ -135,7 +137,7 @@ export default function GestureStudio() {
         results.multiHandLandmarks.forEach((landmarks, i) => {
           const handedness = results.multiHandedness[i].label.toLowerCase();
           const indexTip = landmarks[8];
-          const velocity = Math.random() * 2; // Simplified velocity calculation
+          const velocity = Math.random() * 2;
 
           handsData[handedness] = {
             x: indexTip.x,
@@ -162,14 +164,23 @@ export default function GestureStudio() {
           // Audio mapping
           if (handedness === 'right') {
             const freq = 200 + indexTip.y * 800;
+            const filterFreq = 500 + indexTip.x * 2000;
+            const gain = velocity * 0.3;
+            
             oscillator.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
-            filter.frequency.setTargetAtTime(500 + indexTip.x * 2000, audioCtx.currentTime, 0.01);
-            gainNode.gain.setTargetAtTime(velocity * 0.3, audioCtx.currentTime, 0.01);
-          }
+            filter.frequency.setTargetAtTime(filterFreq, audioCtx.currentTime, 0.01);
+            gainNode.gain.setTargetAtTime(gain, audioCtx.currentTime, 0.01);
 
-          // Log gesture event
-          if (isRecording && sessionId) {
-            logGestureEvent(handedness, indexTip.x, indexTip.y, velocity);
+            // Log gesture event with audio parameters
+            if (isRecording && sessionId) {
+              logGestureEvent(handedness, indexTip.x, indexTip.y, velocity, {
+                frequency: freq,
+                filterFreq: filterFreq,
+                gain: gain
+              });
+            }
+          } else if (isRecording && sessionId) {
+            logGestureEvent(handedness, indexTip.x, indexTip.y, velocity, null);
           }
         });
 
@@ -255,7 +266,7 @@ export default function GestureStudio() {
     setSessionId(null);
   };
 
-  const logGestureEvent = async (hand, x, y, velocity) => {
+  const logGestureEvent = async (hand, x, y, velocity, audioParams) => {
     if (!sessionId) return;
 
     try {
@@ -266,6 +277,7 @@ export default function GestureStudio() {
         position_x: x,
         position_y: y,
         velocity,
+        audio_params: audioParams,
         timestamp: new Date().toISOString()
       });
       setGestureCount(prev => prev + 1);
@@ -366,7 +378,26 @@ export default function GestureStudio() {
 
       {/* Session History */}
       {showHistory && user && (
-        <SessionHistory userEmail={user.email} onClose={() => setShowHistory(false)} />
+        <SessionHistory 
+          userEmail={user.email} 
+          onClose={() => setShowHistory(false)}
+          onReplay={(sessionId) => {
+            setReplaySessionId(sessionId);
+            setShowReplay(true);
+            setShowHistory(false);
+          }}
+        />
+      )}
+
+      {/* Performance Replay */}
+      {showReplay && replaySessionId && (
+        <PerformanceReplay 
+          sessionId={replaySessionId}
+          onClose={() => {
+            setShowReplay(false);
+            setReplaySessionId(null);
+          }}
+        />
       )}
     </div>
   );

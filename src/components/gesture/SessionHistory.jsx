@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { X, Clock, Zap } from 'lucide-react';
+import { X, Clock, Zap, Play } from 'lucide-react';
 import { format } from 'date-fns';
+import PerformanceReplay from './PerformanceReplay';
 
-export default function SessionHistory({ userEmail, onClose }) {
+export default function SessionHistory({ userEmail, onClose, onReplay }) {
   const [sessions, setSessions] = useState([]);
 
   useEffect(() => {
@@ -40,15 +41,18 @@ export default function SessionHistory({ userEmail, onClose }) {
             sessions.map((session) => (
               <div
                 key={session.id}
-                className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cyan-400/30 transition-all"
+                className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cyan-400/30 transition-all cursor-pointer group"
+                onClick={() => onReplay(session.id)}
               >
                 <div className="flex items-start justify-between">
-                  <div>
-                    <div className="text-white font-medium mb-1">{session.session_name}</div>
+                  <div className="flex-1">
+                    <div className="text-white font-medium mb-1 group-hover:text-cyan-400 transition-colors">
+                      {session.session_name}
+                    </div>
                     <div className="flex items-center gap-4 text-xs text-white/60">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {format(new Date(session.timestamp), 'MMM d, h:mm a')}
+                        {format(new Date(session.timestamp || session.created_date), 'MMM d, h:mm a')}
                       </div>
                       <div className="flex items-center gap-1">
                         <Zap className="w-3 h-3" />
@@ -56,11 +60,16 @@ export default function SessionHistory({ userEmail, onClose }) {
                       </div>
                     </div>
                   </div>
-                  {session.mapping_preset_id && (
-                    <div className="px-2 py-1 rounded-full bg-cyan-400/20 text-cyan-400 text-xs">
-                      Preset Used
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {session.mapping_preset_id && (
+                      <div className="px-2 py-1 rounded-full bg-cyan-400/20 text-cyan-400 text-xs">
+                        Preset
+                      </div>
+                    )}
+                    <button className="p-2 rounded-full bg-cyan-400/20 text-cyan-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-cyan-400/30">
+                      <Play className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
