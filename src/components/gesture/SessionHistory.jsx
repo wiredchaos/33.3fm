@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { X, Clock, Zap, Play } from 'lucide-react';
+import { X, Clock, Zap, Play, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import PerformanceReplay from './PerformanceReplay';
+import PerformanceAnalyzer from './PerformanceAnalyzer';
 
 export default function SessionHistory({ userEmail, onClose, onReplay }) {
   const [sessions, setSessions] = useState([]);
+  const [showAnalyzer, setShowAnalyzer] = useState(false);
+  const [analyzeSessionId, setAnalyzeSessionId] = useState(null);
 
   useEffect(() => {
     loadSessions();
@@ -41,12 +44,11 @@ export default function SessionHistory({ userEmail, onClose, onReplay }) {
             sessions.map((session) => (
               <div
                 key={session.id}
-                className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cyan-400/30 transition-all cursor-pointer group"
-                onClick={() => onReplay(session.id)}
+                className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg p-4 hover:border-cyan-400/30 transition-all group"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="text-white font-medium mb-1 group-hover:text-cyan-400 transition-colors">
+                    <div className="text-white font-medium mb-1">
                       {session.session_name}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-white/60">
@@ -66,8 +68,26 @@ export default function SessionHistory({ userEmail, onClose, onReplay }) {
                         Preset
                       </div>
                     )}
-                    <button className="p-2 rounded-full bg-cyan-400/20 text-cyan-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-cyan-400/30">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onReplay(session.id);
+                      }}
+                      className="p-2 rounded-full bg-cyan-400/20 text-cyan-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-cyan-400/30"
+                      title="Replay"
+                    >
                       <Play className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAnalyzeSessionId(session.id);
+                        setShowAnalyzer(true);
+                      }}
+                      className="p-2 rounded-full bg-purple-400/20 text-purple-400 opacity-0 group-hover:opacity-100 transition-all hover:bg-purple-400/30"
+                      title="AI Analysis"
+                    >
+                      <Sparkles className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -75,6 +95,17 @@ export default function SessionHistory({ userEmail, onClose, onReplay }) {
             ))
           )}
         </div>
+
+        {/* Performance Analyzer */}
+        {showAnalyzer && analyzeSessionId && (
+          <PerformanceAnalyzer
+            sessionId={analyzeSessionId}
+            onClose={() => {
+              setShowAnalyzer(false);
+              setAnalyzeSessionId(null);
+            }}
+          />
+        )}
       </div>
     </div>
   );

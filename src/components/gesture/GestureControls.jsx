@@ -2,12 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Save } from 'lucide-react';
+import { X, Save, Edit, Volume2, Sliders } from 'lucide-react';
+import GestureMappingEditor from './GestureMappingEditor';
 
 export default function GestureControls({ onClose }) {
   const [presets, setPresets] = useState([]);
   const [newPresetName, setNewPresetName] = useState('');
   const [selectedScale, setSelectedScale] = useState('pentatonic');
+  const [showMappingEditor, setShowMappingEditor] = useState(false);
+  const [audioEffects, setAudioEffects] = useState({
+    delay: 0.3,
+    feedback: 0.3,
+    reverb: 0.4,
+    distortion: 0
+  });
 
   useEffect(() => {
     loadPresets();
@@ -65,6 +73,16 @@ export default function GestureControls({ onClose }) {
         </div>
 
         <div className="space-y-4 mb-6">
+          <div className="flex gap-2 mb-4">
+            <Button
+              onClick={() => setShowMappingEditor(true)}
+              className="flex-1 bg-gradient-to-r from-cyan-400 to-purple-600 hover:opacity-90"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Gesture Mapping Editor
+            </Button>
+          </div>
+
           <div>
             <label className="text-xs text-white/60 uppercase tracking-wider mb-2 block">Scale</label>
             <select
@@ -78,6 +96,36 @@ export default function GestureControls({ onClose }) {
               <option value="minor">Minor</option>
               <option value="dorian">Dorian</option>
             </select>
+          </div>
+
+          {/* Audio Effects */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Volume2 className="w-4 h-4 text-purple-400" />
+              <label className="text-xs text-white/60 uppercase tracking-wider">Audio Effects</label>
+            </div>
+            <div className="space-y-3">
+              {Object.keys(audioEffects).map((effect) => (
+                <div key={effect}>
+                  <div className="flex justify-between text-xs text-white/60 mb-1">
+                    <span className="capitalize">{effect}</span>
+                    <span>{audioEffects[effect].toFixed(2)}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={audioEffects[effect]}
+                    onChange={(e) => setAudioEffects({
+                      ...audioEffects,
+                      [effect]: parseFloat(e.target.value)
+                    })}
+                    className="w-full accent-cyan-400"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -115,6 +163,17 @@ export default function GestureControls({ onClose }) {
             ))
           )}
         </div>
+
+        {/* Mapping Editor */}
+        {showMappingEditor && (
+          <GestureMappingEditor
+            onClose={() => setShowMappingEditor(false)}
+            onSave={(preset) => {
+              setShowMappingEditor(false);
+              loadPresets();
+            }}
+          />
+        )}
       </div>
     </div>
   );
