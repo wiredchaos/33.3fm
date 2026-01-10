@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Link2, Loader2, CheckCircle2, Package, AlertCircle } from 'lucide-react';
 
 export default function NFTCollectionImporter({ onImportComplete }) {
-  const [collectionUrl, setCollectionUrl] = useState('');
+  const [collectionUrl, setCollectionUrl] = useState('https://opensea.io/BlockchaintrapperETH');
   const [isImporting, setIsImporting] = useState(false);
   const [importedItems, setImportedItems] = useState([]);
   const [error, setError] = useState(null);
@@ -34,14 +34,17 @@ export default function NFTCollectionImporter({ onImportComplete }) {
 
   const fetchNFTData = async (platform, identifier) => {
     // Use LLM with web search to fetch NFT data from public APIs
-    const prompt = `Fetch NFT collection data for ${platform} collection: ${identifier}
+    const prompt = `Fetch NFT collection data for ${platform} collection/user: ${identifier}
+
+IMPORTANT: Only extract MUSIC NFTs. Filter for audio files, music tracks, albums, or sound art.
+Ignore visual art, PFPs, or non-music NFTs.
 
 Extract:
 - Collection name
-- Items (up to 10 NFTs)
-- For each NFT: name, description, image URL, token ID
+- Items (up to 10 MUSIC NFTs only)
+- For each MUSIC NFT: name, description, image URL, token ID
 
-Use public APIs or web scraping. Return structured JSON.`;
+Use public APIs or web scraping. Return structured JSON with MUSIC NFTs only.`;
 
     try {
       const response = await base44.integrations.Core.InvokeLLM({
@@ -89,13 +92,13 @@ Use public APIs or web scraping. Return structured JSON.`;
       // Get current user
       const user = await base44.auth.me();
 
-      // Create phygital items from NFT data
+      // Create phygital items from NFT data (music NFTs only)
       const createdItems = [];
       for (const nft of collectionData.items) {
         const item = await base44.entities.PhygitalItem.create({
           user_email: user.email,
-          item_name: nft.name || 'Untitled NFT',
-          item_type: 'collectible',
+          item_name: nft.name || 'Untitled Music NFT',
+          item_type: 'vinyl',
           model_url: nft.image_url,
           ar_enabled: true,
           display_position: {
@@ -108,7 +111,8 @@ Use public APIs or web scraping. Return structured JSON.`;
             token_id: nft.token_id,
             description: nft.description,
             collection: collectionData.collection_name,
-            imported_from_url: true
+            imported_from_url: true,
+            nft_type: 'music'
           }
         });
         createdItems.push(item);
@@ -131,8 +135,8 @@ Use public APIs or web scraping. Return structured JSON.`;
           <Link2 className="w-5 h-5 text-cyan-400" />
         </div>
         <div>
-          <h2 className="text-xl font-light text-white">Import NFT Collection</h2>
-          <p className="text-xs text-white/60">No wallet connection required</p>
+          <h2 className="text-xl font-light text-white">Import Music NFTs</h2>
+          <p className="text-xs text-white/60">Music NFTs only • No wallet required</p>
         </div>
       </div>
 
