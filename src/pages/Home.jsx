@@ -137,6 +137,13 @@ export default function Home() {
       icon: Station,
       path: 'BroadcastPortal',
       tier: 'PAID'
+    },
+    {
+      name: 'NFT Museum',
+      description: 'Your music NFT collection',
+      icon: Music,
+      path: 'NFTMuseum',
+      tier: 'FREE'
     }
   ];
 
