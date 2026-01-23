@@ -202,6 +202,8 @@ Use public APIs or web scraping. Return structured JSON with MUSIC NFTs only.`;
                       src={item.model_url} 
                       alt={item.item_name}
                       className="w-full h-24 object-cover rounded mb-2"
+                      onError={(e) => e.target.style.display = 'none'}
+                      loading="lazy"
                     />
                   )}
                   <p className="text-xs text-white font-medium truncate">{item.item_name}</p>

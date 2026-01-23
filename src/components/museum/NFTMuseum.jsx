@@ -94,6 +94,8 @@ export default function NFTMuseum() {
                           src={nft.model_url}
                           alt={nft.item_name}
                           className="w-full h-32 object-cover rounded-lg mb-2"
+                          onError={(e) => e.target.style.display = 'none'}
+                          loading="lazy"
                         />
                       )}
                       <p className="text-xs text-white font-medium truncate">{nft.item_name}</p>
@@ -138,6 +140,8 @@ export default function NFTMuseum() {
                   src={selectedNFT.model_url}
                   alt={selectedNFT.item_name}
                   className="w-64 h-64 object-cover rounded-xl"
+                  onError={(e) => e.target.style.display = 'none'}
+                  loading="lazy"
                 />
               )}
               <div className="flex-1">
