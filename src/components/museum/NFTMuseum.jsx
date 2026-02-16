@@ -5,6 +5,7 @@ import NFTCollectionImporter from './NFTCollectionImporter';
 import { Package, Plus, Eye, Music, Play, Pause, Volume2, Edit3, Palette, Grid3x3, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 export default function NFTMuseum() {
   const [nfts, setNfts] = useState([]);
@@ -151,6 +152,14 @@ export default function NFTMuseum() {
                     className={`group cursor-pointer ${editMode ? 'animate-pulse' : ''}`}
                   >
                     <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-3 hover:border-cyan-400/50 transition-all relative">
+                      <GlowingEffect
+                        spread={30}
+                        glow={selectedNFT?.id === nft.id}
+                        disabled={false}
+                        proximity={60}
+                        inactiveZone={0.2}
+                        borderWidth={2}
+                      />
                       {editMode && (
                         <div className="absolute top-2 right-2 z-10 bg-cyan-400 text-black rounded-full p-1">
                           <Grid3x3 className="w-3 h-3" />
