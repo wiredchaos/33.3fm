@@ -12,6 +12,7 @@ import ElevatorNav from '@/components/navigation/ElevatorNav';
 import InscriptionExplainer from '@/components/education/InscriptionExplainer';
 import LiveChat from '@/components/chat/LiveChat';
 import DJRedFang from '@/components/dj/DJRedFang';
+import { GlowingEffect } from '@/components/ui/glowing-effect';
 
 export default function BroadcastPortal() {
   const canvasRef = useRef(null);
@@ -285,9 +286,20 @@ export default function BroadcastPortal() {
               <Layers className="w-4 h-4" />
               Elevator
             </button>
-            <button onClick={() => setIsLive(!isLive)} className={`px-4 py-2 rounded-full text-xs uppercase tracking-wider transition-all ${isLive ? 'bg-red-500 text-white shadow-lg shadow-red-500/50' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>
-              {isLive ? '● LIVE' : 'Go Live'}
-            </button>
+            <div className="relative">
+              <GlowingEffect
+                spread={50}
+                glow={isLive}
+                disabled={false}
+                proximity={100}
+                inactiveZone={0.1}
+                borderWidth={3}
+                variant={isLive ? "default" : "white"}
+              />
+              <button onClick={() => setIsLive(!isLive)} className={`relative z-10 px-4 py-2 rounded-full text-xs uppercase tracking-wider transition-all ${isLive ? 'bg-red-500 text-white shadow-lg shadow-red-500/50' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>
+                {isLive ? '● LIVE' : 'Go Live'}
+              </button>
+            </div>
           </div>
         </div>
 
