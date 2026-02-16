@@ -102,19 +102,23 @@ export default function Home() {
       
       <div className="relative z-10 flex flex-col items-center justify-center px-4 -mt-96">
         {/* Logo & Title */}
-        <div className="text-center mb-16">
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <Radio className="w-12 h-12 text-cyan-400" />
-          </div>
-          <h1 className="text-6xl md:text-8xl font-light tracking-tight text-white mb-4">
-            33.3FM
-          </h1>
-          <p className="text-xl md:text-2xl text-cyan-400 font-light tracking-wide">
-            DOGECHAIN
-          </p>
-          <div className="mt-4 text-sm text-white/40 uppercase tracking-widest">
+        <div className="text-center mb-16 px-8">
+        <div className="mb-4 flex items-center justify-center gap-3">
+          <Radio className="w-12 h-12 text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
+        </div>
+        <h1 className="text-6xl md:text-8xl font-light tracking-tight text-white mb-4 drop-shadow-[0_0_30px_rgba(239,68,68,0.5)]" style={{
+          textShadow: '0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4)'
+        }}>
+          33.3FM
+        </h1>
+        <p className="text-xl md:text-2xl text-cyan-400 font-light tracking-wide drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]">
+          DOGECHAIN
+        </p>
+        <div className="mt-4 px-6 py-2 inline-block border border-red-500/30 rounded-full bg-black/40 backdrop-blur-sm">
+          <span className="text-sm text-red-400 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(239,68,68,0.6)]">
             WIRED CHAOS META · CRAB 3DT TRINITY
-          </div>
+          </span>
+        </div>
           
           {/* Tour & Navigation Buttons */}
           <div className="mt-8 flex gap-4">
