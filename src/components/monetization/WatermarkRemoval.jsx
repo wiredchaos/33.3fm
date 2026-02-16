@@ -119,8 +119,8 @@ export default function WatermarkRemoval() {
 
               <div className="border-t border-white/10 pt-4">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-white/60">One-time payment</span>
-                  <span className="text-2xl font-bold text-cyan-400">$9.99</span>
+                  <span className="text-sm text-white/60">Monthly subscription</span>
+                  <span className="text-2xl font-bold text-cyan-400">$9.99<span className="text-sm text-white/60">/mo</span></span>
                 </div>
 
                 <Button
@@ -128,11 +128,11 @@ export default function WatermarkRemoval() {
                   disabled={isProcessing}
                   className="w-full bg-gradient-to-r from-cyan-400 to-purple-600 hover:from-cyan-500 hover:to-purple-700 text-white"
                 >
-                  {isProcessing ? 'Processing...' : 'Remove Watermark'}
+                  {isProcessing ? 'Processing...' : 'Subscribe Now'}
                 </Button>
 
                 <p className="text-xs text-white/40 text-center mt-3">
-                  Applies to all 3D environments • Permanent removal
+                  Applies to all 3D environments • Cancel anytime
                 </p>
               </div>
             </>
