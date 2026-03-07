@@ -60,6 +60,7 @@ import PodcastBooth from './pages/PodcastBooth';
 import RecordingStudio from './pages/RecordingStudio';
 import Store from './pages/Store';
 import Subscription from './pages/Subscription';
+import CBEIntegrationMap from './pages/CBEIntegrationMap';
 
 
 export const PAGES = {
@@ -76,6 +77,7 @@ export const PAGES = {
     "RecordingStudio": RecordingStudio,
     "Store": Store,
     "Subscription": Subscription,
+    "CBEIntegrationMap": CBEIntegrationMap,
 }
 
 export const pagesConfig = {
