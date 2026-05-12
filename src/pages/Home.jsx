@@ -42,6 +42,7 @@ const studioRoutes = [
   { name: 'Mix Room',         description: 'Multitrack editor',        icon: Sliders,         path: 'RecordingStudio', tier: 'PRODUCER' },
   { name: 'NFT Mint',         description: 'On-chain minting',         icon: Coins,           path: 'NFTMuseum',       tier: 'SYNDICATE' },
   { name: 'Subscription',     description: 'Unlock all tiers',         icon: Crown,           path: 'Subscription',    tier: 'FREE' },
+  { name: 'Hermes Engine',     description: 'APC · Gemini · MCP nodes',  icon: Sparkles,        path: 'HermesEngine',    tier: 'CREATOR' },
 ];
 
 export default function Home() {

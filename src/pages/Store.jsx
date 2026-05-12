@@ -4,6 +4,7 @@ import { createPageUrl } from '@/utils';
 import * as THREE from 'three';
 import { ArrowLeft, ShoppingBag, Sparkles, Package } from 'lucide-react';
 import VirtualStore from '@/components/monetization/VirtualStore';
+import XMRPayment from '@/components/monetization/XMRPayment';
 
 export default function Store() {
   const canvasRef = useRef(null);
@@ -206,6 +207,21 @@ export default function Store() {
           </div>
         </div>
 
+        {/* XMR Payment Banner */}
+        <div className="px-6 pb-4">
+          <div className="rounded-2xl bg-orange-400/5 border border-orange-400/20 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-400/40 flex items-center justify-center flex-shrink-0">
+              <span className="text-orange-400 font-bold text-xl">&#625;</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-white mb-0.5">Pay with Monero (XMR) &mdash; 10% off all items</h3>
+              <p className="text-xs text-white/40">Private &middot; Fungible &middot; Permissionless. Select XMR at checkout on any item.</p>
+            </div>
+            <Link to={createPageUrl('Subscription')} className="flex-shrink-0 px-4 py-2 rounded-full bg-orange-400/15 border border-orange-400/30 text-orange-400 text-xs font-mono hover:bg-orange-400/25 transition-all">
+              View Plans &rarr;
+            </Link>
+          </div>
+        </div>
         {/* Store Content */}
         <div className="p-6 pt-0">
           <VirtualStore />

@@ -62,6 +62,7 @@ import Store from './pages/Store';
 import Subscription from './pages/Subscription';
 import CBEIntegrationMap from './pages/CBEIntegrationMap';
 import StudioDashboard from './pages/StudioDashboard';
+import HermesEngine from './pages/HermesEngine';
 
 
 export const PAGES = {
@@ -80,6 +81,7 @@ export const PAGES = {
     "Subscription": Subscription,
     "CBEIntegrationMap": CBEIntegrationMap,
     "StudioDashboard": StudioDashboard,
+    "HermesEngine": HermesEngine,
 }
 
 export const pagesConfig = {
