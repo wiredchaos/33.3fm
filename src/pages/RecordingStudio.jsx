@@ -18,6 +18,7 @@ import ThreeDMicrophone from '@/components/interactive/3DMicrophone';
 import ThreeDDrumKit from '@/components/interactive/3DDrumKit';
 import ThreeDOrchestra from '@/components/interactive/3DOrchestra';
 import ThreeDSynthesizer from '@/components/interactive/3DSynthesizer';
+import GlobalPlayer from '@/components/audio/GlobalPlayer';
 
 export default function RecordingStudio() {
   const canvasRef = useRef(null);
@@ -981,9 +982,10 @@ export default function RecordingStudio() {
 
       {/* 3D Elevator Navigation */}
       <ElevatorNav isOpen={showElevator} onClose={() => setShowElevator(false)} />
-
       {/* Change Machine */}
       <ChangeMachine isOpen={showChangeMachine} onClose={() => setShowChangeMachine(false)} />
+      {/* Global Player */}
+      <GlobalPlayer />
     </div>
   );
 }
