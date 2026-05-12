@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
 import * as THREE from 'three';
 import { ArrowLeft, User, ArrowUpRight, Plus, Package, Eye } from 'lucide-react';
 import SocialAuth from '@/components/auth/SocialAuth';
@@ -28,7 +27,7 @@ export default function ArtistProfile() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await base44.auth.me();
+      const currentUser = null; // standalone mode
       setUser(currentUser);
     } catch (error) {
       console.error('User not logged in');
@@ -38,8 +37,8 @@ export default function ArtistProfile() {
   useEffect(() => {
     const loadPhygitalItems = async () => {
       try {
-        const currentUser = await base44.auth.me();
-        const items = await base44.entities.PhygitalItem.filter({ user_email: currentUser.email });
+        const currentUser = null; // standalone mode
+        const items = [];
         setPhygitalItems(items);
       } catch (error) {
         console.error('Failed to load phygital items');

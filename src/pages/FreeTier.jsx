@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
 import { Music, Radio, TrendingUp, Users, Zap, Check, X, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -9,15 +8,7 @@ export default function FreeTier() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.log('Not logged in');
-      }
-    };
-    loadUser();
+    // Auth handled by standalone AuthContext
   }, []);
 
   const freeFeatures = [

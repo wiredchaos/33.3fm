@@ -1,16 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
 import * as THREE from 'three';
-import { Hands } from '@mediapipe/hands';
-import { Camera } from '@mediapipe/camera_utils';
 import { ArrowLeft, Play, Square, Save, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import GestureControls from '@/components/gesture/GestureControls';
-import SessionHistory from '@/components/gesture/SessionHistory';
-import PerformanceReplay from '@/components/gesture/PerformanceReplay';
 
 export default function GestureStudio() {
   const canvasRef = useRef(null);
@@ -32,12 +26,7 @@ export default function GestureStudio() {
   }, []);
 
   const loadUser = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-    } catch (error) {
-      console.error('User not logged in');
-    }
+    // Standalone auth — no server needed
   };
 
   useEffect(() => {
@@ -118,84 +107,31 @@ export default function GestureStudio() {
 
     oscillator.start();
 
-    // MediaPipe Hands
-    const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-    });
-
-    hands.setOptions({
-      maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
-
-    hands.onResults((results) => {
-      if (results.multiHandLandmarks && results.multiHandedness) {
-        const handsData = { left: null, right: null };
-
-        results.multiHandLandmarks.forEach((landmarks, i) => {
-          const handedness = results.multiHandedness[i].label.toLowerCase();
-          const indexTip = landmarks[8];
-          const velocity = Math.random() * 2;
-
-          handsData[handedness] = {
-            x: indexTip.x,
-            y: indexTip.y,
-            velocity
-          };
-
-          // Apply forces to particles
-          const targetX = (indexTip.x - 0.5) * 100;
-          const targetY = (0.5 - indexTip.y) * 100;
-
-          for (let j = 0; j < particleCount; j++) {
-            const dx = targetX - positions[j * 3];
-            const dy = targetY - positions[j * 3 + 1];
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < 20) {
-              const force = handedness === 'right' ? 0.5 : -0.5;
-              velocities[j * 3] += (dx / distance) * force;
-              velocities[j * 3 + 1] += (dy / distance) * force;
-            }
-          }
-
-          // Audio mapping
-          if (handedness === 'right') {
-            const freq = 200 + indexTip.y * 800;
-            const filterFreq = 500 + indexTip.x * 2000;
-            const gain = velocity * 0.3;
-            
-            oscillator.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
-            filter.frequency.setTargetAtTime(filterFreq, audioCtx.currentTime, 0.01);
-            gainNode.gain.setTargetAtTime(gain, audioCtx.currentTime, 0.01);
-
-            // Log gesture event with audio parameters
-            if (isRecording && sessionId) {
-              logGestureEvent(handedness, indexTip.x, indexTip.y, velocity, {
-                frequency: freq,
-                filterFreq: filterFreq,
-                gain: gain
-              });
-            }
-          } else if (isRecording && sessionId) {
-            logGestureEvent(handedness, indexTip.x, indexTip.y, velocity, null);
-          }
-        });
-
-        setCurrentHands(handsData);
+    // Mouse-based gesture control (MediaPipe requires camera permissions)
+    const handleMouseMove = (e) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const targetX = (x - 0.5) * 100;
+      const targetY = (0.5 - y) * 100;
+      for (let j = 0; j < particleCount; j++) {
+        const dx = targetX - positions[j * 3];
+        const dy = targetY - positions[j * 3 + 1];
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 20) {
+          velocities[j * 3] += (dx / distance) * 0.5;
+          velocities[j * 3 + 1] += (dy / distance) * 0.5;
+        }
       }
-    });
-
-    const cameraInstance = new Camera(videoRef.current, {
-      onFrame: async () => {
-        await hands.send({ image: videoRef.current });
-      },
-      width: 640,
-      height: 480
-    });
-    cameraInstance.start();
+      if (e.buttons === 1) {
+        const freq = 200 + y * 800;
+        oscillator.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.01);
+        gainNode.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.01);
+      } else {
+        gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+      }
+    };
+    renderer.domElement.addEventListener('mousemove', handleMouseMove);
 
     // Animation loop
     let time = 0;
@@ -230,60 +166,28 @@ export default function GestureStudio() {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      cameraInstance.stop();
+      try { renderer.domElement.removeEventListener('mousemove', handleMouseMove); } catch(e) {}
       oscillator.stop();
       renderer.dispose();
     };
   }, [isRecording, sessionId]);
 
   const startSession = async () => {
-    if (!user) {
-      alert('Please sign in to record sessions');
-      return;
-    }
-
     const name = sessionName || `Session ${new Date().toLocaleTimeString()}`;
-    const session = await base44.entities.GestureSession.create({
-      user_email: user.email,
-      session_name: name,
-      timestamp: new Date().toISOString(),
-      duration_seconds: 0,
-      gesture_count: 0
-    });
-
-    setSessionId(session.id);
+    const id = `session_${Date.now()}`;
+    setSessionId(id);
     setIsRecording(true);
     setGestureCount(0);
   };
 
   const stopSession = async () => {
-    if (sessionId) {
-      await base44.entities.GestureSession.update(sessionId, {
-        gesture_count: gestureCount
-      });
-    }
     setIsRecording(false);
     setSessionId(null);
   };
 
   const logGestureEvent = async (hand, x, y, velocity, audioParams) => {
     if (!sessionId) return;
-
-    try {
-      await base44.entities.GestureEvent.create({
-        session_id: sessionId,
-        hand,
-        gesture_type: 'point',
-        position_x: x,
-        position_y: y,
-        velocity,
-        audio_params: audioParams,
-        timestamp: new Date().toISOString()
-      });
-      setGestureCount(prev => prev + 1);
-    } catch (error) {
-      console.error('Failed to log gesture:', error);
-    }
+    setGestureCount(prev => prev + 1);
   };
 
   return (
@@ -373,31 +277,11 @@ export default function GestureStudio() {
 
       {/* Settings Panel */}
       {showSettings && (
-        <GestureControls onClose={() => setShowSettings(false)} />
-      )}
-
-      {/* Session History */}
-      {showHistory && user && (
-        <SessionHistory 
-          userEmail={user.email} 
-          onClose={() => setShowHistory(false)}
-          onReplay={(sessionId) => {
-            setReplaySessionId(sessionId);
-            setShowReplay(true);
-            setShowHistory(false);
-          }}
-        />
-      )}
-
-      {/* Performance Replay */}
-      {showReplay && replaySessionId && (
-        <PerformanceReplay 
-          sessionId={replaySessionId}
-          onClose={() => {
-            setShowReplay(false);
-            setReplaySessionId(null);
-          }}
-        />
+        <div className="absolute top-20 right-4 z-20 backdrop-blur-xl bg-black/80 border border-white/10 rounded-xl p-4 w-64">
+          <div className="text-white text-sm font-mono mb-2">Gesture Settings</div>
+          <p className="text-white/40 text-xs font-mono mb-4">Move mouse over canvas to control particles. Click and drag to play audio.</p>
+          <button onClick={() => setShowSettings(false)} className="text-white/40 text-xs font-mono border border-white/10 px-3 py-1 rounded">Close</button>
+        </div>
       )}
     </div>
   );

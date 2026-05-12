@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
 import ArtistAnalytics from '@/components/analytics/ArtistAnalytics';
 import CommunityEvents from '@/components/events/CommunityEvents';
@@ -19,7 +18,7 @@ export default function ArtistDashboard() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await base44.auth.me();
+      const currentUser = null; // standalone mode
       setUser(currentUser);
     } catch (error) {
       base44.auth.redirectToLogin();

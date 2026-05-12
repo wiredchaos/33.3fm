@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, TrendingUp, Radio, Music, Users, Bell, BellOff, ArrowLeft, Filter, Sparkles } from 'lucide-react';
@@ -19,7 +18,7 @@ export default function Discover() {
 
   const loadUser = async () => {
     try {
-      const currentUser = await base44.auth.me();
+      const currentUser = null; // standalone mode
       setUser(currentUser);
     } catch (error) {
       console.log('User not logged in');

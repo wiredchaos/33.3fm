@@ -1,52 +1,3 @@
-/**
- * pages.config.js - Page routing configuration
- * 
- * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
- * Pages are auto-registered when you create files in the ./pages/ folder.
- * 
- * THE ONLY EDITABLE VALUE: mainPage
- * This controls which page is the landing page (shown when users visit the app).
- * 
- * Example file structure:
- * 
- *   import HomePage from './pages/HomePage';
- *   import Dashboard from './pages/Dashboard';
- *   import Settings from './pages/Settings';
- *   
- *   export const PAGES = {
- *       "HomePage": HomePage,
- *       "Dashboard": Dashboard,
- *       "Settings": Settings,
- *   }
- *   
- *   export const pagesConfig = {
- *       mainPage: "HomePage",
- *       Pages: PAGES,
- *   };
- * 
- * Example with Layout (wraps all pages):
- *
- *   import Home from './pages/Home';
- *   import Settings from './pages/Settings';
- *   import __Layout from './Layout.jsx';
- *
- *   export const PAGES = {
- *       "Home": Home,
- *       "Settings": Settings,
- *   }
- *
- *   export const pagesConfig = {
- *       mainPage: "Home",
- *       Pages: PAGES,
- *       Layout: __Layout,
- *   };
- *
- * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
- *   New: mainPage: "Dashboard",
- *
- * The mainPage value must match a key in the PAGES object exactly.
- */
 import ArtistDashboard from './pages/ArtistDashboard';
 import ArtistProfile from './pages/ArtistProfile';
 import BroadcastPortal from './pages/BroadcastPortal';
@@ -63,7 +14,22 @@ import Subscription from './pages/Subscription';
 import CBEIntegrationMap from './pages/CBEIntegrationMap';
 import StudioDashboard from './pages/StudioDashboard';
 import HermesEngine from './pages/HermesEngine';
-
+// Virtual Signal Studio
+import VirtualSignalStudio from './pages/VirtualSignalStudio';
+import SignalBooth from './pages/SignalBooth';
+import ProducerRoom from './pages/ProducerRoom';
+import MixRoom from './pages/MixRoom';
+import ControlRoom from './pages/ControlRoom';
+import AccessGate from './pages/AccessGate';
+import MintStudio from './pages/MintStudio';
+import Playlists from './pages/Playlists';
+// Museum routes
+import NeonVault from './pages/NeonVault';
+import Galleries from './pages/Galleries';
+import IPAudits from './pages/IPAudits';
+import AudioTours from './pages/AudioTours';
+// Artist pages
+import ArtistPage from './pages/ArtistPage';
 
 export const PAGES = {
     "ArtistDashboard": ArtistDashboard,
@@ -82,9 +48,25 @@ export const PAGES = {
     "CBEIntegrationMap": CBEIntegrationMap,
     "StudioDashboard": StudioDashboard,
     "HermesEngine": HermesEngine,
+    // Virtual Signal Studio
+    "VirtualSignalStudio": VirtualSignalStudio,
+    "SignalBooth": SignalBooth,
+    "ProducerRoom": ProducerRoom,
+    "MixRoom": MixRoom,
+    "ControlRoom": ControlRoom,
+    "AccessGate": AccessGate,
+    "MintStudio": MintStudio,
+    "Playlists": Playlists,
+    // Museum
+    "NeonVault": NeonVault,
+    "Galleries": Galleries,
+    "IPAudits": IPAudits,
+    "AudioTours": AudioTours,
+    // Artist
+    "ArtistPage": ArtistPage,
 }
 
 export const pagesConfig = {
-    mainPage: "Home",
+    mainPage: "VirtualSignalStudio",
     Pages: PAGES,
 };
