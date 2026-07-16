@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://33.3fm/contracts/score-lab/processing-receipt.schema.json",
+  "title": "ScoreLabProcessingReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "receipt_version",
+    "project_id",
+    "job_id",
+    "source_sha256",
+    "review_status",
+    "steps",
+    "artifacts",
+    "created_at"
+  ],
+  "properties": {
+    "receipt_version": {"const": "1.0"},
+    "project_id": {"type": "string"},
+    "job_id": {"type": "string"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "review_status": {
+      "type": "string",
+      "enum": ["ai_draft", "human_reviewed", "human_verified"]
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "key": {"type": ["string", "null"]},
+        "tempo_bpm": {"type": ["number", "null"], "minimum": 0},
+        "meter": {"type": ["string", "null"]},
+        "duration_seconds": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status", "tool", "tool_version", "started_at"],
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"type": "string", "enum": ["pending", "running", "completed", "failed", "skipped"]},
+          "tool": {"type": "string"},
+          "tool_version": {"type": "string"},
+          "started_at": {"type": "string", "format": "date-time"},
+          "completed_at": {"type": ["string", "null"], "format": "date-time"},
+          "error_code": {"type": ["string", "null"]},
+          "error_message": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "filename", "sha256", "media_type", "version"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["lead_sheet_pdf", "chord_chart_pdf", "midi", "musicxml", "analysis_json", "processing_receipt"]
+          },
+          "filename": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "media_type": {"type": "string"},
+          "version": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "disclaimer": {
+      "type": "string",
+      "default": "This receipt documents a technical processing trail. It is not copyright registration, legal advice, or a guarantee of transcription accuracy."
+    },
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

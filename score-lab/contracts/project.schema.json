@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://33.3fm/contracts/score-lab/project.schema.json",
+  "title": "ScoreLabProject",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "title",
+    "status",
+    "creator_declaration",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "pattern": "^sl_[a-zA-Z0-9_-]{12,64}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "composer": {
+      "type": ["string", "null"],
+      "maxLength": 200
+    },
+    "lyrics": {
+      "type": ["string", "null"],
+      "maxLength": 50000
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "created",
+        "uploaded",
+        "queued",
+        "analyzing",
+        "transcribing",
+        "generating_score",
+        "awaiting_review",
+        "approved",
+        "exporting",
+        "completed",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "creator_declaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "accepted", "accepted_at"],
+      "properties": {
+        "basis": {
+          "type": "string",
+          "enum": ["owner", "licensed", "permission"]
+        },
+        "accepted": {
+          "const": true
+        },
+        "accepted_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "source_audio": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["filename", "media_type", "size_bytes", "sha256"],
+      "properties": {
+        "filename": {"type": "string", "maxLength": 255},
+        "media_type": {"type": "string", "enum": ["audio/mpeg", "audio/wav", "audio/x-wav"]},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "duration_seconds": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "review_status": {
+      "type": "string",
+      "enum": ["ai_draft", "human_reviewed", "human_verified"],
+      "default": "ai_draft"
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"}
+  }
+}
